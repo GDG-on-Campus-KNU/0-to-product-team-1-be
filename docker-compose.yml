@@ -12,5 +12,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  app:
+    build: .
+    container_name: gdg-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/gdg_db
+      SPRING_DATASOURCE_USERNAME: gdg_user
+      SPRING_DATASOURCE_PASSWORD: gdg_password
+    depends_on:
+      - db
+
 volumes:
   postgres_data:
