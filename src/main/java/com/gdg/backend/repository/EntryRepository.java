@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface EntryRepository extends JpaRepository<Entry, Long> {
 
-    Optional<Entry> findByUser_UserIdAndCreatedAtBetween(Long userId, LocalDateTime start, LocalDateTime end);
+    Optional<Entry> findFirstByUser_UserIdAndCreatedAtBetweenOrderByCreatedAtDesc(Long userId, LocalDateTime start, LocalDateTime end);
 
     List<Entry> findAllByUser_UserIdAndCreatedAtBetween(Long userId, LocalDateTime start, LocalDateTime end);
 }

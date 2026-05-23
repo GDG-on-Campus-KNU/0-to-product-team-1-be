@@ -24,7 +24,7 @@ public class DrillService {
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-        return entryRepository.findByUser_UserIdAndCreatedAtBetween(userId, startOfDay, endOfDay)
+        return entryRepository.findFirstByUser_UserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, startOfDay, endOfDay)
                 .map(DrillTodayResponse::from)
                 .orElse(DrillTodayResponse.empty());
     }
