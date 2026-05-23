@@ -42,3 +42,8 @@ Thumbs.db
 
 ### Docs ###
 *.pdf
+
+### Local config ###
+application-local.yaml
+.env
+*.log

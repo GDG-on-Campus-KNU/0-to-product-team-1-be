@@ -2,10 +2,10 @@ spring:
   application:
     name: backend
 
+  profiles:
+    active: local
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/gdg_db
-    username: gdg_user
-    password: gdg_password
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -15,3 +15,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  flyway:
+    enabled: false
