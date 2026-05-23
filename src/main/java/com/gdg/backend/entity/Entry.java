@@ -6,6 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.gdg.backend.dto.request.EntryCreateRequest;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -52,4 +54,13 @@ public class Entry {
 
     @Column(name = "feedback_at")
     private LocalDateTime feedbackAt;
+
+    public static Entry of(User user, EntryCreateRequest request) {
+        return Entry.builder()
+                .user(user)
+                .text(request.getText())
+                .context(request.getContext())
+                .drillComplete(false)
+                .build();
+    }
 }
