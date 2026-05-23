@@ -4,52 +4,47 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @Entity
-@Table(name = "entries")
+@Table(name = "baselines")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Entry {
+public class Baseline {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "entry_id")
-    private Long entryId;
+    @Column(name = "baseline_id")
+    private Long baselineId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(length = 200)
-    private String text;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "patterns_avg", columnDefinition = "jsonb")
+    private Map<String, Object> patternsAvg;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb", nullable = false)
-    private Map<String, Object> context;
+    @Column(name = "behaviors_avg", columnDefinition = "jsonb")
+    private Map<String, Object> behaviorsAvg;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "llm_result", columnDefinition = "jsonb")
-    private Map<String, Object> llmResult;
+    @Column(name = "rejected_drills", columnDefinition = "jsonb")
+    private Map<String, Object> rejectedDrills;
 
-    @Column(name = "drill_id")
-    private Integer drillId;
-
-    @Column(name = "drill_complete")
-    private Boolean drillComplete;
-
-    private Boolean helpful;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "feedback_at")
-    private LocalDateTime feedbackAt;
 }

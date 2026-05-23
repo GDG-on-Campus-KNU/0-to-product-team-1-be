@@ -7,27 +7,31 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "feedbacks")
+@Table(name = "insights")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Feedback {
+public class Insight {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "insight_id")
+    private Long insightId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entry_id", nullable = false)
-    private Entry entry;
+    @JoinColumn(name = "report_id", nullable = false)
+    private Report report;
 
-    @Column(name = "drill_id", length = 10, nullable = false)
-    private String drillId;
+    @Column(columnDefinition = "TEXT")
+    private String text;
 
-    @Column(length = 20)
-    private String label;
+    @Column(columnDefinition = "TEXT")
+    private String source;
+
+    @Column(name = "week_of")
+    private String weekOf;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

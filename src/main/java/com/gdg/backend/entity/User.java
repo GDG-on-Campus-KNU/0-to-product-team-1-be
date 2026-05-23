@@ -17,15 +17,22 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "user_id")
+    private Long userId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, length = 20)
+    private String username;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String email;
 
-    @Column(name = "display_name", length = 100)
-    private String displayName;
+    @Column(name = "password_hash", nullable = false, columnDefinition = "TEXT")
+    private String passwordHash;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "confirmed_at")
+    private LocalDateTime confirmedAt;
 }

@@ -10,46 +10,32 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Entity
-@Table(name = "entries")
+@Table(name = "reports")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Entry {
+public class Report {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "entry_id")
-    private Long entryId;
+    @Column(name = "report_id")
+    private Long reportId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(length = 200)
-    private String text;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "pattern_analysis", columnDefinition = "jsonb")
+    private Map<String, Object> patternAnalysis;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb", nullable = false)
-    private Map<String, Object> context;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "llm_result", columnDefinition = "jsonb")
-    private Map<String, Object> llmResult;
-
-    @Column(name = "drill_id")
-    private Integer drillId;
-
-    @Column(name = "drill_complete")
-    private Boolean drillComplete;
-
-    private Boolean helpful;
+    @Column(name = "emotion_distribution", columnDefinition = "jsonb")
+    private Map<String, Object> emotionDistribution;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "feedback_at")
-    private LocalDateTime feedbackAt;
 }
