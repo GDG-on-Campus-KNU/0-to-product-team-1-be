@@ -1,6 +1,7 @@
 package com.gdg.backend.service;
 
 import com.gdg.backend.dto.response.CalendarResponse;
+import com.gdg.backend.dto.response.DailyRecordResponse;
 import com.gdg.backend.entity.Entry;
 import com.gdg.backend.repository.EntryRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,18 @@ public class RecordService {
         List<Entry> entries = entryRepository.findAllByUser_UserIdAndCreatedAtBetween(userId, startOfMonth, endOfMonth);
 
         return CalendarResponse.of(year, month, entries);
+    }
+
+    /**
+     * 특정 날짜의 드릴 상세 정보를 조회한다.
+     * Entry가 없으면 hasEntry=false를 반환한다.
+     */
+    public DailyRecordResponse getDailyRecord(Long userId, LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        return entryRepository.findByUser_UserIdAndCreatedAtBetween(userId, startOfDay, endOfDay)
+                .map(DailyRecordResponse::from)
+                .orElse(DailyRecordResponse.empty());
     }
 }
