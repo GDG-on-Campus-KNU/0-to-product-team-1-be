@@ -23,9 +23,16 @@ public class GlobalExceptionHandler {
         return ApiResponse.fail("INVALID_INPUT", message != null ? message : "입력값이 올바르지 않습니다.");
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse<?> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ApiResponse.fail("NOT_FOUND", e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponse<?> handleException(Exception e) {
+        e.printStackTrace();
         return ApiResponse.fail("INTERNAL_ERROR", "서버 오류가 발생했습니다.");
     }
 }

@@ -45,7 +45,7 @@ public class RecordService {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-        return entryRepository.findByUser_UserIdAndCreatedAtBetween(userId, startOfDay, endOfDay)
+        return entryRepository.findFirstByUser_UserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, startOfDay, endOfDay)
                 .map(DailyRecordResponse::from)
                 .orElse(DailyRecordResponse.empty());
     }
