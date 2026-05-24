@@ -36,6 +36,7 @@ public class UserService {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }
 
+        userRepository.save(user);
         return UserResponse.from(user);
     }
 }
