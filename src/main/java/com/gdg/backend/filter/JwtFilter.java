@@ -2,6 +2,8 @@ package com.gdg.backend.filter;
 
 import com.gdg.backend.repository.UserRepository;
 import com.gdg.backend.service.TokenBlacklistService;
+import com.gdg.backend.entity.User;
+import com.gdg.backend.repository.UserRepository;
 import com.gdg.backend.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
