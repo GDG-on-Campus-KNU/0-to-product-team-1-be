@@ -1,5 +1,6 @@
 package com.gdg.backend.dto.response;
 
+import com.gdg.backend.dto.ml.MlRecommendResponse;
 import com.gdg.backend.entity.Entry;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,9 @@ public class EntryCreateResponse {
     private Map<String, Object> llmResult;
     private LocalDateTime createdAt;
 
+    // ML 추천 결과
+    private MlRecommendResponse recommendation;
+
     public static EntryCreateResponse from(Entry entry) {
         return EntryCreateResponse.builder()
                 .entryId(entry.getEntryId())
@@ -28,6 +32,19 @@ public class EntryCreateResponse {
                 .drillComplete(entry.getDrillComplete())
                 .llmResult(entry.getLlmResult())
                 .createdAt(entry.getCreatedAt())
+                .build();
+    }
+
+    public static EntryCreateResponse from(Entry entry, MlRecommendResponse recommendation) {
+        return EntryCreateResponse.builder()
+                .entryId(entry.getEntryId())
+                .text(entry.getText())
+                .context(entry.getContext())
+                .drillId(entry.getDrillId())
+                .drillComplete(entry.getDrillComplete())
+                .llmResult(entry.getLlmResult())
+                .createdAt(entry.getCreatedAt())
+                .recommendation(recommendation)
                 .build();
     }
 }

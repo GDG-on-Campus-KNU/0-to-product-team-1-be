@@ -18,3 +18,8 @@ spring:
 
   flyway:
     enabled: false
+
+ml:
+  service:
+    base-url: ${ML_SERVICE_URL:http://localhost:8001}
+    timeout: 10000
