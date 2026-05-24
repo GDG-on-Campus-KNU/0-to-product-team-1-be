@@ -1,5 +1,7 @@
 package com.gdg.backend.filter;
 
+import com.gdg.backend.repository.UserRepository;
+import com.gdg.backend.service.TokenBlacklistService;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.repository.UserRepository;
 import com.gdg.backend.util.JwtUtil;
@@ -22,6 +24,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -29,7 +32,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = extractToken(request);
 
-        if (token != null && jwtUtil.isTokenValid(token)) {
+        if (token != null && jwtUtil.isTokenValid(token) && !tokenBlacklistService.isBlacklisted(token)) {
             String email = jwtUtil.extractEmail(token);
 
             userRepository.findByEmail(email).ifPresent(user -> {

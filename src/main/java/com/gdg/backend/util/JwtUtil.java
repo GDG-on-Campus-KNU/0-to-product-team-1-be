@@ -6,6 +6,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Component
@@ -27,6 +29,11 @@ public class JwtUtil {
 
     public String extractEmail(String token) {
         return extractClaims(token).getSubject();
+    }
+
+    public LocalDateTime extractExpiration(String token) {
+        Date expiration = extractClaims(token).getExpiration();
+        return expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     public boolean isTokenValid(String token) {
