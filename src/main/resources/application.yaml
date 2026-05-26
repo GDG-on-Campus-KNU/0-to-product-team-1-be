@@ -17,9 +17,37 @@ spring:
         format_sql: true
 
   flyway:
-    enabled: false
+    enabled: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 ml:
   service:
     base-url: ${ML_SERVICE_URL:http://localhost:8001}
     timeout: 10000
+    timeout-label: 10000
+    timeout-recommend: 3000
+    timeout-weekly: 5000
+    timeout-health: 3000
+    retry-max-attempts: 2
+
+admin:
+  token: ${ADMIN_TOKEN:dev_token_local}
+
+jwt:
+  secret: ${JWT_SECRET:mysecretkeyformysecretkeyformysecretkeyfor}

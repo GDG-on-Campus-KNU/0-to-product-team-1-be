@@ -1,14 +1,12 @@
 package com.gdg.backend.service;
 
 import com.gdg.backend.dto.response.DrillTodayResponse;
-import com.gdg.backend.entity.Entry;
 import com.gdg.backend.repository.EntryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

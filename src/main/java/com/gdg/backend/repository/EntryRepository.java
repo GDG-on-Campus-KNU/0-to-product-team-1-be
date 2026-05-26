@@ -18,4 +18,10 @@ public interface EntryRepository extends JpaRepository<Entry, Long> {
 
     @Query("SELECT e.drillId FROM Entry e WHERE e.user.userId = :userId AND e.drillId IS NOT NULL ORDER BY e.createdAt DESC")
     List<Integer> findRecentDrillIdsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    long countByUser_UserIdAndCreatedAtBetween(Long userId, LocalDateTime start, LocalDateTime end);
+
+    // 10.4 90일 미사용 조회
+    @Query("SELECT DISTINCT e.user.userId FROM Entry e WHERE e.createdAt >= :since")
+    List<Long> findActiveUserIdsSince(@Param("since") LocalDateTime since);
 }
