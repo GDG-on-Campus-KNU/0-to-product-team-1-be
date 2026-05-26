@@ -35,6 +35,12 @@ public class Report {
     @Column(name = "emotion_distribution", columnDefinition = "jsonb")
     private Map<String, Object> emotionDistribution;
 
+    @Column(name = "week_of", length = 20)
+    private String weekOf;
+
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -55,12 +55,17 @@ public class Entry {
     @Column(name = "feedback_at")
     private LocalDateTime feedbackAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "time_of_day", length = 20)
+    private TimeOfDay timeOfDay;
+
     public static Entry of(User user, EntryCreateRequest request) {
         return Entry.builder()
                 .user(user)
                 .text(request.getText())
                 .context(request.getContext())
                 .drillComplete(false)
+                .timeOfDay(request.getTimeOfDay())
                 .build();
     }
 }

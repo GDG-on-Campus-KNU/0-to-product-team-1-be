@@ -40,6 +40,12 @@ public class Baseline {
     @Column(name = "rejected_drills", columnDefinition = "jsonb")
     private Map<String, Object> rejectedDrills;
 
+    @Column(name = "sample_count")
+    private Integer sampleCount;
+
+    @Column(name = "window_days")
+    private Integer windowDays;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

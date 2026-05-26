@@ -41,6 +41,10 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AuthException("USER_NOT_FOUND", "존재하지 않는 이메일입니다."));
 
+        if (user.getPasswordHash() == null) {
+            throw new AuthException("OAUTH_USER", "소셜 로그인 계정입니다. 비밀번호 로그인을 사용할 수 없습니다.");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new AuthException("INVALID_PASSWORD", "비밀번호가 틀렸습니다.");
         }

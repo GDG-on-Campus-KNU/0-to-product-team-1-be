@@ -26,7 +26,7 @@ public class User {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String email;
 
-    @Column(name = "password_hash", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "password_hash", columnDefinition = "TEXT")
     private String passwordHash;
 
     @CreationTimestamp
