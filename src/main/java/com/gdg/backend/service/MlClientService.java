@@ -2,6 +2,8 @@ package com.gdg.backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gdg.backend.dto.ml.MlEntriesRequest;
+import com.gdg.backend.dto.ml.MlEntriesResponse;
 import com.gdg.backend.dto.ml.MlLabelRequest;
 import com.gdg.backend.dto.ml.MlLabelResult;
 import com.gdg.backend.dto.ml.MlRecommendRequest;
@@ -43,6 +45,35 @@ public class MlClientService {
 
     @Value("${ml.service.timeout:10000}")
     private long defaultTimeoutMs;
+
+    /**
+     * ML POST /entries 통합 호출 — 라벨링 + 추천 한 번에
+     */
+    public MlEntriesResponse callEntries(MlEntriesRequest request) {
+        try {
+            return mlWebClient.post()
+                    .uri("/entries")
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(MlEntriesResponse.class)
+                    .timeout(Duration.ofMillis(defaultTimeoutMs))
+                    .block();
+        } catch (WebClientResponseException e) {
+            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                throw new QuotaExceededException(parseRetryAfter(e.getResponseBodyAsString()));
+            }
+            if (e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
+                throw new MlUnavailableException("entries");
+            }
+            log.error("ML /entries 호출 실패: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("ML 서비스 호출 실패 (entries): " + e.getResponseBodyAsString(), e);
+        } catch (QuotaExceededException | MlUnavailableException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("ML /entries 호출 에러", e);
+            throw new MlUnavailableException("connection");
+        }
+    }
 
     /**
      * ML /label 호출 — 텍스트 라벨링

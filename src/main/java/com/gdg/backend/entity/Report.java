@@ -41,6 +41,20 @@ public class Report {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
+    @Column(name = "report_type", length = 20)
+    private String reportType;
+
+    @Column(name = "period_id", length = 20)
+    private String periodId;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "blocks_json", columnDefinition = "jsonb")
+    private Map<String, Object> blocksJson;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "visualizations_json", columnDefinition = "jsonb")
+    private Map<String, Object> visualizationsJson;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
