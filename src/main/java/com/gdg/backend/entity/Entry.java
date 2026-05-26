@@ -8,6 +8,7 @@ import org.hibernate.type.SqlTypes;
 
 import com.gdg.backend.dto.request.EntryCreateRequest;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -58,6 +59,28 @@ public class Entry {
     @Enumerated(EnumType.STRING)
     @Column(name = "time_of_day", length = 20)
     private TimeOfDay timeOfDay;
+
+    @Column(name = "recorded_date")
+    private LocalDate recordedDate;
+
+    @Column(name = "drill_category", length = 100)
+    private String drillCategory;
+
+    @Column(name = "drill_calendar_color", length = 50)
+    private String drillCalendarColor;
+
+    @Column(name = "awaiting_answer")
+    private Boolean awaitingAnswer;
+
+    @Column(name = "offered_category", length = 100)
+    private String offeredCategory;
+
+    @Column(name = "crisis_flag")
+    private Boolean crisisFlag;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "recommendation_json", columnDefinition = "jsonb")
+    private Map<String, Object> recommendationJson;
 
     public static Entry of(User user, EntryCreateRequest request) {
         return Entry.builder()

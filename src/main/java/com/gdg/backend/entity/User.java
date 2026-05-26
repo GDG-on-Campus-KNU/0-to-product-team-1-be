@@ -35,4 +35,7 @@ public class User {
 
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }
