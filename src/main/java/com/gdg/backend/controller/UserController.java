@@ -32,4 +32,12 @@ public class UserController {
             @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(userService.updateMyInfo(user.getUserId(), request));
     }
+
+    // 10.1 회원 탈퇴
+    @Operation(summary = "회원 탈퇴", description = "ML 데이터 포함 전체 삭제 (CASCADE). 30일 내 복구 불가.")
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMe(@AuthenticationPrincipal User user) {
+        userService.deleteUser(user.getUserId());
+        return ResponseEntity.noContent().build();
+    }
 }

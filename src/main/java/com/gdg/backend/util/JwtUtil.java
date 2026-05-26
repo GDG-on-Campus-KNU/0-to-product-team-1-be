@@ -3,6 +3,7 @@ package com.gdg.backend.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,10 +14,14 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET = "mysecretkeyformysecretkeyformysecretkeyfor";
-    private static final long EXPIRATION_MS = 1000L * 60 * 60 * 24; // 24시간
+    // 11.6 JWT_SECRET 환경변수, 15.3 만료 30일
+    private static final long EXPIRATION_MS = 1000L * 60 * 60 * 24 * 30; // 30일
 
-    private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private final SecretKey key;
+
+    public JwtUtil(@Value("${jwt.secret:mysecretkeyformysecretkeyformysecretkeyfor}") String secret) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String generateToken(String email) {
         return Jwts.builder()
