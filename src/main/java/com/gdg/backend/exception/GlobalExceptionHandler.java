@@ -44,6 +44,13 @@ public class GlobalExceptionHandler {
         return ApiResponse.fail("ML_UNAVAILABLE", e.getMessage());
     }
 
+    // 일 1회 정책 — 중복 입력 409
+    @ExceptionHandler(DuplicateEntryException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiResponse<?> handleDuplicateEntry(DuplicateEntryException e) {
+        return ApiResponse.fail("DUPLICATE_ENTRY", e.getMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<?> handleIllegalArgumentException(IllegalArgumentException e) {
