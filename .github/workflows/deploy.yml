@@ -21,4 +21,6 @@ jobs:
             cd ~/Desktop/0-to-product-team-1-be
             git pull --rebase
             docker compose down
-            docker compose up -d --build
+            docker compose build --no-cache 
+            docker compose up -d
+            
