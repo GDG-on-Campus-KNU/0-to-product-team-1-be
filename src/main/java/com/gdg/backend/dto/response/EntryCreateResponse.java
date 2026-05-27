@@ -23,6 +23,13 @@ public class EntryCreateResponse {
     // ML 추천 결과
     private MlRecommendResponse recommendation;
 
+    // v9.5 새 필드
+    private String drillCategory;
+    private String drillCalendarColor;
+    private Boolean awaitingAnswer;
+    private Boolean crisisFlag;
+    private Map<String, Object> recommendationJson;
+
     public static EntryCreateResponse from(Entry entry) {
         return EntryCreateResponse.builder()
                 .entryId(entry.getEntryId())
@@ -32,6 +39,11 @@ public class EntryCreateResponse {
                 .drillComplete(entry.getDrillComplete())
                 .llmResult(entry.getLlmResult())
                 .createdAt(entry.getCreatedAt())
+                .drillCategory(entry.getDrillCategory())
+                .drillCalendarColor(entry.getDrillCalendarColor())
+                .awaitingAnswer(entry.getAwaitingAnswer())
+                .crisisFlag(entry.getCrisisFlag())
+                .recommendationJson(entry.getRecommendationJson())
                 .build();
     }
 
@@ -45,6 +57,11 @@ public class EntryCreateResponse {
                 .llmResult(entry.getLlmResult())
                 .createdAt(entry.getCreatedAt())
                 .recommendation(recommendation)
+                .drillCategory(entry.getDrillCategory())
+                .drillCalendarColor(entry.getDrillCalendarColor())
+                .awaitingAnswer(entry.getAwaitingAnswer())
+                .crisisFlag(entry.getCrisisFlag())
+                .recommendationJson(entry.getRecommendationJson())
                 .build();
     }
 }
