@@ -16,6 +16,4 @@ public class EntryCreateRequest {
     private String text;
 
     private Map<String, Object> context;
-
-    private com.gdg.backend.entity.TimeOfDay timeOfDay;
 }

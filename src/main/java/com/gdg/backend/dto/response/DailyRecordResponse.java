@@ -4,6 +4,7 @@ import com.gdg.backend.entity.Entry;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -14,11 +15,12 @@ public class DailyRecordResponse {
     private boolean hasEntry;
     private Long entryId;
     private String text;
-    private Map<String, Object> context;
     private Integer drillId;
-    private Boolean drillComplete;
-    private Map<String, Object> llmResult;
-    private Boolean helpful;
+    private String drillCategory;
+    private String drillCalendarColor;
+    private Map<String, Object> labelResultJson;
+    private Map<String, Object> recommendationJson;
+    private LocalDate recordedDate;
     private LocalDateTime createdAt;
 
     public static DailyRecordResponse empty() {
@@ -32,11 +34,12 @@ public class DailyRecordResponse {
                 .hasEntry(true)
                 .entryId(entry.getEntryId())
                 .text(entry.getText())
-                .context(entry.getContext())
                 .drillId(entry.getDrillId())
-                .drillComplete(entry.getDrillComplete())
-                .llmResult(entry.getLlmResult())
-                .helpful(entry.getHelpful())
+                .drillCategory(entry.getDrillCategory())
+                .drillCalendarColor(entry.getDrillCalendarColor())
+                .labelResultJson(entry.getLabelResultJson())
+                .recommendationJson(entry.getRecommendationJson())
+                .recordedDate(entry.getRecordedDate())
                 .createdAt(entry.getCreatedAt())
                 .build();
     }

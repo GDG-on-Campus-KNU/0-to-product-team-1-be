@@ -1,21 +1,16 @@
 package com.gdg.backend.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gdg.backend.dto.ml.MlAfterAskRequest;
 import com.gdg.backend.dto.ml.MlEntriesRequest;
 import com.gdg.backend.dto.ml.MlEntriesResponse;
 import com.gdg.backend.dto.ml.MlRecommendResponse;
 import com.gdg.backend.dto.request.AskAnswerRequest;
 import com.gdg.backend.dto.request.EntryCreateRequest;
-import com.gdg.backend.dto.request.FeedbackRequest;
-import com.gdg.backend.dto.request.RejectRequest;
 import com.gdg.backend.dto.response.EntryCreateResponse;
 import com.gdg.backend.entity.Entry;
-import com.gdg.backend.entity.RejectedDrill;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.exception.DuplicateEntryException;
 import com.gdg.backend.repository.EntryRepository;
-import com.gdg.backend.repository.RejectedDrillRepository;
 import com.gdg.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +30,6 @@ public class EntryService {
     private final UserRepository userRepository;
     private final MlClientService mlClientService;
     private final ContextCacheService contextCacheService;
-    private final RejectedDrillRepository rejectedDrillRepository;
-    private final ObjectMapper objectMapper;
 
     @Transactional
     @SuppressWarnings("unchecked")
@@ -55,8 +47,12 @@ public class EntryService {
         Map<String, Object> filledContext = contextCacheService.fillContext(userId, request.getContext());
         contextCacheService.storeContext(userId, filledContext);
 
-        Entry entry = entryRepository.save(Entry.of(user, request));
-        entry.setRecordedDate(today);
+        Entry entry = Entry.builder()
+                .user(user)
+                .text(request.getText())
+                .recordedDate(today)
+                .build();
+        entryRepository.save(entry);
 
         // 최근 드릴 ID 조회 (추천 다양성)
         List<Integer> recentDrillIds = entryRepository.findRecentDrillIdsByUserId(
@@ -78,7 +74,7 @@ public class EntryService {
         MlEntriesResponse mlRes = mlClientService.callEntries(mlReq);
 
         // Entry에 ML 결과 저장
-        entry.setLlmResult(mlRes.getLabelResult());
+        entry.setLabelResultJson(mlRes.getLabelResult());
         entry.setRecommendationJson(mlRes.getRecommendation());
         entry.setDrillCategory(mlRes.getDrillCategory());
         entry.setDrillCalendarColor(mlRes.getDrillCalendarColor());
@@ -134,7 +130,7 @@ public class EntryService {
                 .userId(String.valueOf(userId))
                 .userChoice("yes")
                 .offerCategory(entry.getOfferedCategory())
-                .labelResult(entry.getLlmResult())
+                .labelResult(entry.getLabelResultJson())
                 .build();
 
         MlRecommendResponse mlRes = mlClientService.callAfterAsk(mlReq);
@@ -148,24 +144,9 @@ public class EntryService {
         return EntryCreateResponse.from(entry, mlRes);
     }
 
-    // 14.4 드릴 거부 학습 신호
+    // 14.4 드릴 거부 — 향후 별도 테이블 추가 시 구현
     @Transactional
-    public void rejectDrill(RejectRequest request, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-        RejectedDrill rejected = RejectedDrill.builder()
-                .user(user)
-                .drillId(request.getDrillId())
-                .build();
-        rejectedDrillRepository.save(rejected);
-    }
-
-    @Transactional
-    public void submitFeedback(Long entryId, FeedbackRequest request) {
-        Entry entry = entryRepository.findById(entryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 엔트리입니다."));
-
-        entry.setHelpful(request.getHelpful());
-        entry.setFeedbackAt(LocalDateTime.now());
+    public void rejectDrill(Long userId, Integer drillId) {
+        // TODO: 드릴 거부 로직 (ERD에 rejected_drills 없음)
     }
 }

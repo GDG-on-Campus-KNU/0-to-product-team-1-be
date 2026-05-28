@@ -2,8 +2,6 @@ package com.gdg.backend.controller;
 
 import com.gdg.backend.dto.response.CalendarResponse;
 import com.gdg.backend.dto.response.DailyRecordResponse;
-import com.gdg.backend.dto.response.WeeklyReportDetailResponse;
-import com.gdg.backend.dto.response.WeeklyReportListResponse;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.service.RecordService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Tag(name = "Record", description = "기록 조회 관련 API")
 @RestController
@@ -40,19 +37,5 @@ public class RecordController {
             @AuthenticationPrincipal User user,
             @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         return ResponseEntity.ok(recordService.getDailyRecord(user.getUserId(), date));
-    }
-
-    @Operation(summary = "주간 리포트 목록 조회", description = "해당 유저의 주간 리포트 목록을 최신순으로 조회합니다.")
-    @GetMapping("/weekly")
-    public ResponseEntity<List<WeeklyReportListResponse>> getWeeklyReports(
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(recordService.getWeeklyReports(user.getUserId()));
-    }
-
-    @Operation(summary = "주간 리포트 상세 조회", description = "특정 주간 리포트의 상세 정보와 인사이트를 조회합니다.")
-    @GetMapping("/weekly/{weekId}")
-    public ResponseEntity<WeeklyReportDetailResponse> getWeeklyReportDetail(
-            @PathVariable Long weekId) {
-        return ResponseEntity.ok(recordService.getWeeklyReportDetail(weekId));
     }
 }

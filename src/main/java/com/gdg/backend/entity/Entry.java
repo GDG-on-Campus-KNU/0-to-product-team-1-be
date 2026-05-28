@@ -6,8 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.gdg.backend.dto.request.EntryCreateRequest;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -34,61 +32,35 @@ public class Entry {
     private String text;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb", nullable = false)
-    private Map<String, Object> context;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "llm_result", columnDefinition = "jsonb")
-    private Map<String, Object> llmResult;
-
-    @Column(name = "drill_id")
-    private Integer drillId;
-
-    @Column(name = "drill_complete")
-    private Boolean drillComplete;
-
-    private Boolean helpful;
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "feedback_at")
-    private LocalDateTime feedbackAt;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "time_of_day", length = 20)
-    private TimeOfDay timeOfDay;
-
-    @Column(name = "recorded_date")
-    private LocalDate recordedDate;
-
-    @Column(name = "drill_category", length = 100)
-    private String drillCategory;
-
-    @Column(name = "drill_calendar_color", length = 50)
-    private String drillCalendarColor;
-
-    @Column(name = "awaiting_answer")
-    private Boolean awaitingAnswer;
-
-    @Column(name = "offered_category", length = 100)
-    private String offeredCategory;
-
-    @Column(name = "crisis_flag")
-    private Boolean crisisFlag;
+    @Column(name = "label_result_json", columnDefinition = "jsonb")
+    private Map<String, Object> labelResultJson;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "recommendation_json", columnDefinition = "jsonb")
     private Map<String, Object> recommendationJson;
 
-    public static Entry of(User user, EntryCreateRequest request) {
-        return Entry.builder()
-                .user(user)
-                .text(request.getText())
-                .context(request.getContext())
-                .drillComplete(false)
-                .timeOfDay(request.getTimeOfDay())
-                .build();
-    }
+    @Column(name = "drill_id")
+    private Integer drillId;
+
+    @Column(name = "drill_category", length = 50)
+    private String drillCategory;
+
+    @Column(name = "drill_calendar_color", length = 20)
+    private String drillCalendarColor;
+
+    @Column(name = "recorded_date")
+    private LocalDate recordedDate;
+
+    @Column(name = "awaiting_answer")
+    private Boolean awaitingAnswer;
+
+    @Column(name = "offered_category", length = 50)
+    private String offeredCategory;
+
+    @Column(name = "crisis_flag")
+    private Boolean crisisFlag;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 }

@@ -14,16 +14,14 @@ public class EntryCreateResponse {
 
     private Long entryId;
     private String text;
-    private Map<String, Object> context;
     private Integer drillId;
-    private Boolean drillComplete;
-    private Map<String, Object> llmResult;
+    private Map<String, Object> labelResultJson;
     private LocalDateTime createdAt;
 
     // ML 추천 결과
     private MlRecommendResponse recommendation;
 
-    // v9.5 새 필드
+    // v9.5 필드
     private String drillCategory;
     private String drillCalendarColor;
     private Boolean awaitingAnswer;
@@ -34,10 +32,8 @@ public class EntryCreateResponse {
         return EntryCreateResponse.builder()
                 .entryId(entry.getEntryId())
                 .text(entry.getText())
-                .context(entry.getContext())
                 .drillId(entry.getDrillId())
-                .drillComplete(entry.getDrillComplete())
-                .llmResult(entry.getLlmResult())
+                .labelResultJson(entry.getLabelResultJson())
                 .createdAt(entry.getCreatedAt())
                 .drillCategory(entry.getDrillCategory())
                 .drillCalendarColor(entry.getDrillCalendarColor())
@@ -51,10 +47,8 @@ public class EntryCreateResponse {
         return EntryCreateResponse.builder()
                 .entryId(entry.getEntryId())
                 .text(entry.getText())
-                .context(entry.getContext())
                 .drillId(entry.getDrillId())
-                .drillComplete(entry.getDrillComplete())
-                .llmResult(entry.getLlmResult())
+                .labelResultJson(entry.getLabelResultJson())
                 .createdAt(entry.getCreatedAt())
                 .recommendation(recommendation)
                 .drillCategory(entry.getDrillCategory())
