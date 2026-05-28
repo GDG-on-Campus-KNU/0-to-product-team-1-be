@@ -18,7 +18,6 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final TokenBlacklistService tokenBlacklistService;
 
     public AuthResponse signup(SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -51,11 +50,5 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(user.getEmail());
         return new AuthResponse(token);
-    }
-
-    public void logout(String token) {
-        if (token != null && jwtUtil.isTokenValid(token)) {
-            tokenBlacklistService.blacklist(token);
-        }
     }
 }

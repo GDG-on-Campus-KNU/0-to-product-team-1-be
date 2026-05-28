@@ -19,12 +19,14 @@ public class CalendarResponse {
     @Builder
     public static class DailyRecord {
         private LocalDate date;
-        private boolean drillComplete;
+        private String drillCategory;
+        private String drillCalendarColor;
 
         public static DailyRecord from(Entry entry) {
             return DailyRecord.builder()
-                    .date(entry.getCreatedAt().toLocalDate())
-                    .drillComplete(Boolean.TRUE.equals(entry.getDrillComplete()))
+                    .date(entry.getRecordedDate())
+                    .drillCategory(entry.getDrillCategory())
+                    .drillCalendarColor(entry.getDrillCalendarColor())
                     .build();
         }
     }
