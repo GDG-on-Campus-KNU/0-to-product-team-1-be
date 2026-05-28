@@ -222,6 +222,14 @@ public class MlClientService {
                 .timeout(Duration.ofMillis(defaultTimeoutMs)).block();
     }
 
+    /** 드릴 피드백 — ML POST /feedback */
+    public java.util.Map<String, Object> postFeedback(java.util.Map<String, Object> body) {
+        return mlWebClient.post().uri("/feedback").bodyValue(body)
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                .timeout(Duration.ofMillis(defaultTimeoutMs)).block();
+    }
+
     /** 7.2 주간 리포트 생성 — ML POST /reports */
     public java.util.Map<String, Object> callReports(MlReportRequest request) {
         try {
