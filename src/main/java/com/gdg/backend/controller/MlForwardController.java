@@ -83,6 +83,16 @@ public class MlForwardController {
         return ResponseEntity.ok(mlClientService.getInsights(String.valueOf(user.getUserId())));
     }
 
+    // 드릴 피드백 제출
+    @Operation(summary = "드릴 피드백", description = "드릴이 도움이 되었는지 피드백을 ML에 전달합니다.")
+    @PostMapping("/feedback")
+    public ResponseEntity<Map<String, Object>> postFeedback(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal User user) {
+        body.put("user_id", String.valueOf(user.getUserId()));
+        return ResponseEntity.ok(mlClientService.postFeedback(body));
+    }
+
     // 14.14 GET /export
     @Operation(summary = "사용자 데이터 내보내기")
     @GetMapping("/export")
