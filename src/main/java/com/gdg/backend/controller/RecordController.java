@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
-@Tag(name = "Record", description = "기록 조회 관련 API")
+@Tag(name = "Record", description = "기록 조회 관련 API (Entry 기반 조회)")
 @RestController
 @RequestMapping("/records")
 @RequiredArgsConstructor

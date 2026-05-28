@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * 14.5~14.14 ML 포워딩 엔드포인트
  */
-@Tag(name = "ML Forward", description = "ML 서비스 포워딩 API")
+@Tag(name = "ML Forward", description = "ML 서비스 포워딩 API (일부 협의/구현 예정)")
 @RestController
 @RequiredArgsConstructor
 public class MlForwardController {
