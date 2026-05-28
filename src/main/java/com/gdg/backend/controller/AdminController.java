@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Admin", description = "관리자 전용 API")
+@Tag(name = "Admin", description = "관리자 전용 API — 팀 협의 필요")
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
@@ -25,7 +25,7 @@ public class AdminController {
      * 5.4 시연 직전 quota 리셋
      * user_id 없으면 전체 리셋
      */
-    @Operation(summary = "Quota 리셋", description = "시연 전 ML quota 리셋. ADMIN_TOKEN 필수.")
+    @Operation(summary = "Quota 리셋", description = "시연 전 ML quota 리셋. ADMIN_TOKEN 필수. [협의 필요] FE 호출 여부 및 사용 방식 미정")
     @PostMapping("/quota/reset")
     public ResponseEntity<ApiResponse<?>> resetQuota(
             @RequestHeader("X-Admin-Token") String token,
