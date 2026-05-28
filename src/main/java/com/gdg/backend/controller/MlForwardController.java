@@ -99,4 +99,66 @@ public class MlForwardController {
     public ResponseEntity<Map<String, Object>> exportUserData(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(mlClientService.exportUserData(String.valueOf(user.getUserId())));
     }
+
+    // ── TODO: ML 서버 연동 후 구현 예정 ──
+
+    @Operation(summary = "[TODO] 나의 발견 저장", description = "ML 서버 연동 후 구현 예정")
+    @PostMapping("/discoveries")
+    public ResponseEntity<Void> postDiscoveries() {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 나의 발견 조회", description = "ML 서버 연동 후 구현 예정")
+    @GetMapping("/discoveries")
+    public ResponseEntity<Void> getDiscoveries() {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 카테고리 목록 조회", description = "ML 서버 연동 후 구현 예정 — 6 카테고리 + 캘린더 색 매핑")
+    @GetMapping("/categories")
+    public ResponseEntity<Void> getCategories() {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 베이스라인 스냅샷 생성", description = "ML 서버 연동 후 구현 예정")
+    @PostMapping("/baselines/snapshot")
+    public ResponseEntity<Void> postBaselineSnapshot() {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 베이스라인 조회", description = "ML 서버 연동 후 구현 예정")
+    @GetMapping("/baselines/{userId}")
+    public ResponseEntity<Void> getBaseline(@PathVariable String userId) {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 퀴즈 답변 제출", description = "ML 서버 연동 후 구현 예정")
+    @PostMapping("/quiz/answer")
+    public ResponseEntity<Void> postQuizAnswer() {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 퀴즈 정답률 조회", description = "ML 서버 연동 후 구현 예정")
+    @GetMapping("/quiz/correct-rate")
+    public ResponseEntity<Void> getQuizCorrectRate() {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 드릴 거부", description = "ML 서버 연동 후 구현 예정 — 거부 학습 신호")
+    @PostMapping("/drills/{id}/reject")
+    public ResponseEntity<Void> rejectDrill(@PathVariable String id) {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 최신 주간 리포트", description = "ML 서버 연동 후 구현 예정")
+    @GetMapping("/weekly/latest")
+    public ResponseEntity<Void> getWeeklyLatest() {
+        return ResponseEntity.status(501).build();
+    }
+
+    @Operation(summary = "[TODO] 최신 월간 리포트", description = "ML 서버 연동 후 구현 예정")
+    @GetMapping("/monthly/latest")
+    public ResponseEntity<Void> getMonthlyLatest() {
+        return ResponseEntity.status(501).build();
+    }
 }

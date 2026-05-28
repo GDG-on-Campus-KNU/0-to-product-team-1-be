@@ -230,6 +230,29 @@ public class MlClientService {
                 .timeout(Duration.ofMillis(defaultTimeoutMs)).block();
     }
 
+    /** 월간 리포트 생성 — ML POST /monthly */
+    public java.util.Map<String, Object> callMonthly(String userId, String monthId) {
+        try {
+            java.util.Map<String, Object> body = java.util.Map.of(
+                    "user_id", userId,
+                    "month_id", monthId
+            );
+            return mlWebClient.post()
+                    .uri("/monthly")
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                    .timeout(Duration.ofMillis(weeklyTimeoutMs))
+                    .block();
+        } catch (WebClientResponseException e) {
+            log.error("ML /monthly 호출 실패: status={}", e.getStatusCode());
+            throw new RuntimeException("ML /monthly 호출 실패", e);
+        } catch (Exception e) {
+            log.error("ML /monthly 호출 에러", e);
+            throw new RuntimeException("ML 서비스에 연결할 수 없습니다.", e);
+        }
+    }
+
     /** 7.2 주간 리포트 생성 — ML POST /reports */
     public java.util.Map<String, Object> callReports(MlReportRequest request) {
         try {
