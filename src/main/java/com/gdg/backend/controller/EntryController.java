@@ -2,6 +2,7 @@ package com.gdg.backend.controller;
 
 import com.gdg.backend.dto.request.AskAnswerRequest;
 import com.gdg.backend.dto.request.EntryCreateRequest;
+import com.gdg.backend.dto.request.EntryFeedbackRequest;
 import com.gdg.backend.dto.response.EntryCreateResponse;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.service.EntryService;
@@ -36,5 +37,15 @@ public class EntryController {
             @Valid @RequestBody AskAnswerRequest request,
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(entryService.submitAskAnswer(entryId, request, user.getUserId()));
+    }
+
+    @Operation(summary = "드릴 피드백 제출", description = "드릴 완료 여부 및 도움 여부를 기록하고 ML 개인화 학습에 반영합니다.")
+    @PatchMapping("/{entryId}/feedback")
+    public ResponseEntity<Void> submitFeedback(
+            @PathVariable Long entryId,
+            @RequestBody EntryFeedbackRequest request,
+            @AuthenticationPrincipal User user) {
+        entryService.submitFeedback(entryId, request, user.getUserId());
+        return ResponseEntity.noContent().build();
     }
 }

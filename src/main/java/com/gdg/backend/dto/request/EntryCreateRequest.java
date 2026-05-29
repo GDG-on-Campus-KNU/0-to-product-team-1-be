@@ -1,5 +1,6 @@
 package com.gdg.backend.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -16,4 +17,7 @@ public class EntryCreateRequest {
     private String text;
 
     private Map<String, Object> context;
+
+    @JsonProperty("self_condition")
+    private Integer selfCondition;
 }
