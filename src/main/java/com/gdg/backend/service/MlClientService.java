@@ -79,10 +79,7 @@ public class MlClientService {
      * ML /label 호출 — 텍스트 라벨링
      */
     public MlLabelResult label(String text, Long userId) {
-        MlLabelRequest request = MlLabelRequest.builder()
-                .text(text)
-                .userId(String.valueOf(userId))
-                .build();
+        MlLabelRequest request = MlLabelRequest.of(text, userId);
 
         try {
             return mlWebClient.post()

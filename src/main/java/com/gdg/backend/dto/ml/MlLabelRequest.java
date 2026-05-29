@@ -12,4 +12,11 @@ public class MlLabelRequest {
 
     @JsonProperty("user_id")
     private String userId;
+
+    public static MlLabelRequest of(String text, Long userId) {
+        return MlLabelRequest.builder()
+                .text(text)
+                .userId(String.valueOf(userId))
+                .build();
+    }
 }

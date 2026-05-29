@@ -63,4 +63,12 @@ public class Entry {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    public static Entry of(User user, String text, LocalDate recordedDate) {
+        return Entry.builder()
+                .user(user)
+                .text(text)
+                .recordedDate(recordedDate)
+                .build();
+    }
 }
