@@ -29,7 +29,7 @@ public class EntryController {
         return ResponseEntity.ok(entryService.createEntry(user.getUserId(), request));
     }
 
-    @Operation(summary = "ask-first 답변 제출", description = "ask_user 응답 후 yes/no 제출")
+    @Operation(summary = "ask-first 답변 제출", description = "ML이 ask_user type으로 응답한 경우에만 FE에서 호출. 사용자가 드릴 추천을 수락(yes) 또는 거절(no)하면 호출됩니다.")
     @PostMapping("/{entryId}/ask-answer")
     public ResponseEntity<EntryCreateResponse> submitAskAnswer(
             @PathVariable Long entryId,
