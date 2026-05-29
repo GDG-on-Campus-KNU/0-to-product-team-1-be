@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+import java.util.Map;
+
 @Getter
 @Builder
 public class MlWeeklyRequest {
@@ -16,4 +19,7 @@ public class MlWeeklyRequest {
 
     @JsonProperty("entry_count")
     private int entryCount;
+
+    @JsonProperty("entries")
+    private List<Map<String, Object>> entries;
 }

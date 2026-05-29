@@ -60,6 +60,19 @@ public class Entry {
     @Column(name = "crisis_flag")
     private Boolean crisisFlag;
 
+    @Column(name = "self_condition")
+    private Integer selfCondition;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "context_json", columnDefinition = "jsonb")
+    private Map<String, Object> contextJson;
+
+    @Column(name = "drill_completed")
+    private Boolean drillCompleted;
+
+    @Column(name = "helpful")
+    private Boolean helpful;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -25,6 +25,8 @@ public interface EntryRepository extends JpaRepository<Entry, Long> {
     // 일 1회 정책 — 오늘 이미 입력했는지 확인
     boolean existsByUser_UserIdAndRecordedDate(Long userId, LocalDate recordedDate);
 
+    List<Entry> findByUser_UserIdAndRecordedDateBetween(Long userId, LocalDate start, LocalDate end);
+
     // ask_user 미답변 자동 마감 — recorded_date < 오늘 + awaiting_answer = true
     List<Entry> findByAwaitingAnswerTrueAndRecordedDateBefore(LocalDate date);
 

@@ -17,7 +17,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -41,13 +43,26 @@ public class WeeklyReportScheduler {
 
         userRepository.findAll().forEach(user -> {
             try {
-                long count = entryRepository.countByUser_UserIdAndCreatedAtBetween(
-                        user.getUserId(), weekStart, weekEnd);
+                LocalDate weekStartDate = weekStart.toLocalDate();
+                LocalDate weekEndDate = weekEnd.toLocalDate();
+                List<com.gdg.backend.entity.Entry> weekEntries = entryRepository
+                        .findByUser_UserIdAndRecordedDateBetween(user.getUserId(), weekStartDate, weekEndDate);
 
-                if (count < 3) {
-                    log.debug("사용자 {} entries 부족({}개), 스킵", user.getUserId(), count);
+                if (weekEntries.size() < 3) {
+                    log.debug("사용자 {} entries 부족({}개), 스킵", user.getUserId(), weekEntries.size());
                     return;
                 }
+
+                List<Map<String, Object>> entryData = weekEntries.stream()
+                        .map(e -> {
+                            Map<String, Object> m = new java.util.HashMap<>();
+                            m.put("created_at", e.getCreatedAt() != null ? e.getCreatedAt().toString() : null);
+                            m.put("self_condition", e.getSelfCondition() != null ? e.getSelfCondition() : 0);
+                            m.put("context_json", e.getContextJson() != null ? e.getContextJson() : Map.of());
+                            m.put("label_result_json", e.getLabelResultJson() != null ? e.getLabelResultJson() : Map.of());
+                            return m;
+                        })
+                        .collect(Collectors.toList());
 
                 MlReportRequest reportReq = MlReportRequest.builder()
                         .userId(String.valueOf(user.getUserId()))
@@ -58,7 +73,8 @@ public class WeeklyReportScheduler {
                 MlWeeklyRequest weeklyReq = MlWeeklyRequest.builder()
                         .userId(String.valueOf(user.getUserId()))
                         .weekId(weekId)
-                        .entryCount((int) count)
+                        .entryCount(weekEntries.size())
+                        .entries(entryData)
                         .build();
                 Map<String, Object> weeklyResult = mlClientService.callWeekly(weeklyReq);
 

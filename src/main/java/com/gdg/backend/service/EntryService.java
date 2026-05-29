@@ -6,6 +6,7 @@ import com.gdg.backend.dto.ml.MlEntriesResponse;
 import com.gdg.backend.dto.ml.MlRecommendResponse;
 import com.gdg.backend.dto.request.AskAnswerRequest;
 import com.gdg.backend.dto.request.EntryCreateRequest;
+import com.gdg.backend.dto.request.EntryFeedbackRequest;
 import com.gdg.backend.dto.response.EntryCreateResponse;
 import com.gdg.backend.entity.Entry;
 import com.gdg.backend.entity.User;
@@ -13,6 +14,7 @@ import com.gdg.backend.exception.DuplicateEntryException;
 import com.gdg.backend.repository.EntryRepository;
 import com.gdg.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EntryService {
@@ -43,6 +46,10 @@ public class EntryService {
         }
 
         Entry entry = Entry.of(user, request.getText(), today);
+        entry.setContextJson(request.getContext());
+        if (request.getSelfCondition() != null) {
+            entry.setSelfCondition(request.getSelfCondition());
+        }
 
         // ML 호출 + 결과 반영
         MlEntriesResponse mlRes = callMlEntries(request, userId);
@@ -83,10 +90,6 @@ public class EntryService {
                     }
                 }
                 case "crisis_card" -> entry.setCrisisFlag(true);
-                case "ask_user" -> {
-                    entry.setOfferedCategory((String) rec.get("offer_category"));
-                    entry.setAwaitingAnswer(true);
-                }
             }
         }
     }
@@ -117,6 +120,29 @@ public class EntryService {
         }
         entryRepository.save(entry);
         return EntryCreateResponse.from(entry, mlRes);
+    }
+
+    @Transactional
+    public void submitFeedback(Long entryId, EntryFeedbackRequest request, Long userId) {
+        Entry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 엔트리입니다."));
+
+        if (request.getDrillCompleted() != null) entry.setDrillCompleted(request.getDrillCompleted());
+        if (request.getHelpful() != null) entry.setHelpful(request.getHelpful());
+        entryRepository.save(entry);
+
+        if (entry.getDrillId() != null) {
+            try {
+                mlClientService.postFeedback(Map.of(
+                        "user_id", String.valueOf(userId),
+                        "drill_id", entry.getDrillId(),
+                        "completed", request.getDrillCompleted() != null && request.getDrillCompleted(),
+                        "helpful", request.getHelpful() != null && request.getHelpful()
+                ));
+            } catch (Exception e) {
+                log.warn("ML 피드백 전달 실패 (무시): entryId={}, error={}", entryId, e.getMessage());
+            }
+        }
     }
 
     // 14.4 드릴 거부 — 향후 별도 테이블 추가 시 구현
