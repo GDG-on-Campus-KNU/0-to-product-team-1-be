@@ -38,4 +38,12 @@ public class User {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    public static User of(String email, String username, String passwordHash) {
+        return User.builder()
+                .email(email)
+                .username(username)
+                .passwordHash(passwordHash)
+                .build();
+    }
 }

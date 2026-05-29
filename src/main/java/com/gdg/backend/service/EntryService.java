@@ -29,7 +29,6 @@ public class EntryService {
     private final EntryRepository entryRepository;
     private final UserRepository userRepository;
     private final MlClientService mlClientService;
-    private final ContextCacheService contextCacheService;
 
     @Transactional
     @SuppressWarnings("unchecked")
@@ -43,43 +42,33 @@ public class EntryService {
             throw new DuplicateEntryException("오늘은 이미 입력했습니다.");
         }
 
-        // 캐시에서 누락 컨텍스트 필드 채움 (self_condition은 캐시 X)
-        Map<String, Object> filledContext = contextCacheService.fillContext(userId, request.getContext());
-        contextCacheService.storeContext(userId, filledContext);
+        Entry entry = Entry.of(user, request.getText(), today);
 
-        Entry entry = Entry.builder()
-                .user(user)
-                .text(request.getText())
-                .recordedDate(today)
-                .build();
+        // ML 호출 + 결과 반영
+        MlEntriesResponse mlRes = callMlEntries(request, userId);
+        applyMlResult(entry, mlRes);
+
         entryRepository.save(entry);
+        return EntryCreateResponse.from(entry);
+    }
 
-        // 최근 드릴 ID 조회 (추천 다양성)
+    private MlEntriesResponse callMlEntries(EntryCreateRequest request, Long userId) {
         List<Integer> recentDrillIds = entryRepository.findRecentDrillIdsByUserId(
                 userId, PageRequest.of(0, 3));
 
-        // ML POST /entries 통합 호출 (label + recommend 한 번에)
-        MlEntriesRequest mlReq = MlEntriesRequest.builder()
-                .text(request.getText())
-                .userId(String.valueOf(userId))
-                .context(MlEntriesRequest.MlEntriesContext.builder()
-                        .selfCondition((Integer) filledContext.get("self_condition"))
-                        .sleepHours(toDouble(filledContext.get("sleep_hours")))
-                        .socialToday((String) filledContext.get("social_today"))
-                        .exerciseToday(toDouble(filledContext.get("exercise_today")))
-                        .build())
-                .recentDrillIds(recentDrillIds)
-                .build();
+        MlEntriesRequest mlReq = MlEntriesRequest.of(
+                request.getText(), String.valueOf(userId), request.getContext(), recentDrillIds);
 
-        MlEntriesResponse mlRes = mlClientService.callEntries(mlReq);
+        return mlClientService.callEntries(mlReq);
+    }
 
-        // Entry에 ML 결과 저장
+    @SuppressWarnings("unchecked")
+    private void applyMlResult(Entry entry, MlEntriesResponse mlRes) {
         entry.setLabelResultJson(mlRes.getLabelResult());
         entry.setRecommendationJson(mlRes.getRecommendation());
         entry.setDrillCategory(mlRes.getDrillCategory());
         entry.setDrillCalendarColor(mlRes.getDrillCalendarColor());
 
-        // type별 분기
         Map<String, Object> rec = mlRes.getRecommendation();
         String type = rec != null ? (String) rec.get("type") : null;
         if (type != null) {
@@ -100,16 +89,6 @@ public class EntryService {
                 }
             }
         }
-
-        entryRepository.save(entry);
-        return EntryCreateResponse.from(entry);
-    }
-
-    private Double toDouble(Object value) {
-        if (value == null) return null;
-        if (value instanceof Double d) return d;
-        if (value instanceof Number n) return n.doubleValue();
-        return null;
     }
 
     // ask-first 후속 처리
@@ -126,12 +105,8 @@ public class EntryService {
         }
 
         // yes → ML /recommend/after_ask 호출
-        MlAfterAskRequest mlReq = MlAfterAskRequest.builder()
-                .userId(String.valueOf(userId))
-                .userChoice("yes")
-                .offerCategory(entry.getOfferedCategory())
-                .labelResult(entry.getLabelResultJson())
-                .build();
+        MlAfterAskRequest mlReq = MlAfterAskRequest.of(
+                String.valueOf(userId), "yes", entry.getOfferedCategory(), entry.getLabelResultJson());
 
         MlRecommendResponse mlRes = mlClientService.callAfterAsk(mlReq);
 

@@ -24,4 +24,13 @@ public class MlAfterAskRequest {
 
     @JsonProperty("label_result")
     private Map<String, Object> labelResult;
+
+    public static MlAfterAskRequest of(String userId, String userChoice, String offerCategory, Map<String, Object> labelResult) {
+        return MlAfterAskRequest.builder()
+                .userId(userId)
+                .userChoice(userChoice)
+                .offerCategory(offerCategory)
+                .labelResult(labelResult)
+                .build();
+    }
 }

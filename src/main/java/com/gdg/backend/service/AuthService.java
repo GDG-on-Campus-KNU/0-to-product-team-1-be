@@ -24,11 +24,7 @@ public class AuthService {
             throw new AuthException("DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다.");
         }
 
-        User user = User.builder()
-                .email(request.getEmail())
-                .username(request.getUsername())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .build();
+        User user = User.of(request.getEmail(), request.getUsername(), passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(user);
 
