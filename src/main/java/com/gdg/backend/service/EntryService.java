@@ -1,10 +1,7 @@
 package com.gdg.backend.service;
 
-import com.gdg.backend.dto.ml.MlAfterAskRequest;
 import com.gdg.backend.dto.ml.MlEntriesRequest;
 import com.gdg.backend.dto.ml.MlEntriesResponse;
-import com.gdg.backend.dto.ml.MlRecommendResponse;
-import com.gdg.backend.dto.request.AskAnswerRequest;
 import com.gdg.backend.dto.request.EntryCreateRequest;
 import com.gdg.backend.dto.request.EntryFeedbackRequest;
 import com.gdg.backend.dto.response.EntryCreateResponse;
@@ -89,34 +86,6 @@ public class EntryService {
                 case "crisis_card" -> entry.setCrisisFlag(true);
             }
         }
-    }
-
-    // ask-first 후속 처리
-    @Transactional
-    public EntryCreateResponse submitAskAnswer(Long entryId, AskAnswerRequest request, Long userId) {
-        Entry entry = entryRepository.findById(entryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 엔트리입니다."));
-
-        if ("no".equals(request.getChoice())) {
-            entry.setAwaitingAnswer(false);
-            entry.setDrillCategory(null);
-            entryRepository.save(entry);
-            return EntryCreateResponse.from(entry);
-        }
-
-        // yes → ML /recommend/after_ask 호출
-        MlAfterAskRequest mlReq = MlAfterAskRequest.of(
-                String.valueOf(userId), "yes", entry.getOfferedCategory(), entry.getLabelResultJson());
-
-        MlRecommendResponse mlRes = mlClientService.callAfterAsk(mlReq);
-
-        entry.setAwaitingAnswer(false);
-        if ("drill".equals(mlRes.getType()) && mlRes.getDrill() != null && mlRes.getDrill().getId() != null) {
-            entry.setDrillId(Integer.parseInt(mlRes.getDrill().getId().replaceAll("[^0-9]", "")));
-            entry.setDrillCategory(mlRes.getDrill().getCategory());
-        }
-        entryRepository.save(entry);
-        return EntryCreateResponse.from(entry, mlRes);
     }
 
     @Transactional

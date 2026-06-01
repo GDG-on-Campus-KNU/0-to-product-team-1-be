@@ -51,12 +51,6 @@ public class Entry {
     @Column(name = "recorded_date")
     private LocalDate recordedDate;
 
-    @Column(name = "awaiting_answer")
-    private Boolean awaitingAnswer;
-
-    @Column(name = "offered_category", length = 50)
-    private String offeredCategory;
-
     @Column(name = "crisis_flag")
     private Boolean crisisFlag;
 
