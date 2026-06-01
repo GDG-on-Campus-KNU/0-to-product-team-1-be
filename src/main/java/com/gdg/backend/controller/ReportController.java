@@ -50,4 +50,28 @@ public class ReportController {
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(reportService.getMonthlyReport(monthId, user.getUserId()));
     }
+
+    /* ── 테스트용 Mock API ── */
+
+    @Operation(
+            summary = "[TEST] Mock 주간 리포트 생성",
+            description = "ML 서버 없이 더미 데이터로 주간 리포트를 생성합니다. "
+                    + "FE 리포트 페이지 UI 테스트 전용이며, 생성 후 GET /reports/weekly 로 조회할 수 있습니다."
+    )
+    @PostMapping("/weekly/test")
+    public ResponseEntity<WeeklyReportResponse> createMockWeeklyReport(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(reportService.createMockWeeklyReport(user.getUserId()));
+    }
+
+    @Operation(
+            summary = "[TEST] Mock 월간 리포트 생성",
+            description = "ML 서버 없이 더미 데이터로 월간 리포트를 생성합니다. "
+                    + "FE 리포트 페이지 UI 테스트 전용이며, 생성 후 GET /reports/monthly 로 조회할 수 있습니다."
+    )
+    @PostMapping("/monthly/test")
+    public ResponseEntity<MonthlyReportResponse> createMockMonthlyReport(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(reportService.createMockMonthlyReport(user.getUserId()));
+    }
 }
