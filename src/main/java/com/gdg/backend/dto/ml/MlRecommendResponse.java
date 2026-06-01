@@ -15,7 +15,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MlRecommendResponse {
 
-    // 5 types: drill, crisis_card, positive_card, ask_user, skip
+    // 2 types: drill, crisis_card
     private String type;
     private String reason;
 
@@ -29,22 +29,6 @@ public class MlRecommendResponse {
 
     @JsonProperty("user_message")
     private String userMessage;
-
-    // type=positive_card, skip
-    private String message;
-
-    // type=ask_user (v9.4.4)
-    private String question;
-    private List<Map<String, String>> options;
-
-    @JsonProperty("offer_category")
-    private String offerCategory;
-
-    @JsonProperty("offer_reason_type")
-    private String offerReasonType;
-
-    @JsonProperty("offer_context_value")
-    private Double offerContextValue;
 
     @Getter
     @Setter

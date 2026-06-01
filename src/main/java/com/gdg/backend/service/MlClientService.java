@@ -8,7 +8,6 @@ import com.gdg.backend.dto.ml.MlLabelRequest;
 import com.gdg.backend.dto.ml.MlLabelResult;
 import com.gdg.backend.dto.ml.MlRecommendRequest;
 import com.gdg.backend.dto.ml.MlRecommendResponse;
-import com.gdg.backend.dto.ml.MlAfterAskRequest;
 import com.gdg.backend.dto.ml.MlReportRequest;
 import com.gdg.backend.dto.ml.MlWeeklyRequest;
 import com.gdg.backend.exception.MlUnavailableException;
@@ -132,28 +131,6 @@ public class MlClientService {
         } catch (Exception e) {
             log.error("ML /recommend 호출 에러", e);
             throw new MlUnavailableException("connection");
-        }
-    }
-
-    /** 14.2 ask-first 후속 — ML POST /recommend/after_ask */
-    public MlRecommendResponse callAfterAsk(MlAfterAskRequest request) {
-        try {
-            return mlWebClient.post()
-                    .uri("/recommend/after_ask")
-                    .bodyValue(request)
-                    .retrieve()
-                    .bodyToMono(MlRecommendResponse.class)
-                    .timeout(Duration.ofMillis(recommendTimeoutMs))
-                    .block();
-        } catch (WebClientResponseException e) {
-            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                throw new QuotaExceededException(parseRetryAfter(e.getResponseBodyAsString()));
-            }
-            throw new MlUnavailableException("after_ask");
-        } catch (QuotaExceededException | MlUnavailableException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new MlUnavailableException("after_ask");
         }
     }
 

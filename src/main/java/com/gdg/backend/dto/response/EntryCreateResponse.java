@@ -24,7 +24,6 @@ public class EntryCreateResponse {
     // v9.5 필드
     private String drillCategory;
     private String drillCalendarColor;
-    private Boolean awaitingAnswer;
     private Boolean crisisFlag;
     private Map<String, Object> recommendationJson;
 
@@ -37,7 +36,6 @@ public class EntryCreateResponse {
                 .createdAt(entry.getCreatedAt())
                 .drillCategory(entry.getDrillCategory())
                 .drillCalendarColor(entry.getDrillCalendarColor())
-                .awaitingAnswer(entry.getAwaitingAnswer())
                 .crisisFlag(entry.getCrisisFlag())
                 .recommendationJson(entry.getRecommendationJson())
                 .build();
@@ -53,7 +51,6 @@ public class EntryCreateResponse {
                 .recommendation(recommendation)
                 .drillCategory(entry.getDrillCategory())
                 .drillCalendarColor(entry.getDrillCalendarColor())
-                .awaitingAnswer(entry.getAwaitingAnswer())
                 .crisisFlag(entry.getCrisisFlag())
                 .recommendationJson(entry.getRecommendationJson())
                 .build();
