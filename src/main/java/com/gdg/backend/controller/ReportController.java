@@ -55,8 +55,7 @@ public class ReportController {
 
     @Operation(
             summary = "[TEST] Mock 주간 리포트 생성",
-            description = "ML 서버 없이 더미 데이터로 주간 리포트를 생성합니다. "
-                    + "FE 리포트 페이지 UI 테스트 전용이며, 생성 후 GET /reports/weekly 로 조회할 수 있습니다."
+            description = "ML 서버 없이 더미 데이터로 주간 리포트를 생성 "
     )
     @PostMapping("/weekly/test")
     public ResponseEntity<WeeklyReportResponse> createMockWeeklyReport(
@@ -66,8 +65,7 @@ public class ReportController {
 
     @Operation(
             summary = "[TEST] Mock 월간 리포트 생성",
-            description = "ML 서버 없이 더미 데이터로 월간 리포트를 생성합니다. "
-                    + "FE 리포트 페이지 UI 테스트 전용이며, 생성 후 GET /reports/monthly 로 조회할 수 있습니다."
+            description = "ML 서버 없이 더미 데이터로 월간 리포트를 생성 "
     )
     @PostMapping("/monthly/test")
     public ResponseEntity<MonthlyReportResponse> createMockMonthlyReport(
