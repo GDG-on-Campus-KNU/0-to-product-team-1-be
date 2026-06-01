@@ -20,6 +20,9 @@ public class DrillTodayResponse {
     private String drillCalendarColor;
     private Map<String, Object> labelResultJson;
     private Map<String, Object> recommendationJson;
+    private Boolean drillCompleted;
+    private Boolean helpful;
+    private Map<String, Object> contextJson;
     private LocalDate recordedDate;
     private LocalDateTime createdAt;
 
@@ -39,6 +42,9 @@ public class DrillTodayResponse {
                 .drillCalendarColor(entry.getDrillCalendarColor())
                 .labelResultJson(entry.getLabelResultJson())
                 .recommendationJson(entry.getRecommendationJson())
+                .drillCompleted(entry.getDrillCompleted())
+                .helpful(entry.getHelpful())
+                .contextJson(entry.getContextJson())
                 .recordedDate(entry.getRecordedDate())
                 .createdAt(entry.getCreatedAt())
                 .build();
