@@ -60,9 +60,6 @@ public class Entry {
     @Column(name = "crisis_flag")
     private Boolean crisisFlag;
 
-    @Column(name = "self_condition")
-    private Integer selfCondition;
-
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "context_json", columnDefinition = "jsonb")
     private Map<String, Object> contextJson;
