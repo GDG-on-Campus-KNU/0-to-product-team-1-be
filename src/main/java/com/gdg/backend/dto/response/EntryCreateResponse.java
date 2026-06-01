@@ -26,6 +26,7 @@ public class EntryCreateResponse {
     private String drillCalendarColor;
     private Boolean crisisFlag;
     private Map<String, Object> recommendationJson;
+    private Map<String, Object> contextJson;
 
     public static EntryCreateResponse from(Entry entry) {
         return EntryCreateResponse.builder()
@@ -38,6 +39,7 @@ public class EntryCreateResponse {
                 .drillCalendarColor(entry.getDrillCalendarColor())
                 .crisisFlag(entry.getCrisisFlag())
                 .recommendationJson(entry.getRecommendationJson())
+                .contextJson(entry.getContextJson())
                 .build();
     }
 
@@ -53,6 +55,7 @@ public class EntryCreateResponse {
                 .drillCalendarColor(entry.getDrillCalendarColor())
                 .crisisFlag(entry.getCrisisFlag())
                 .recommendationJson(entry.getRecommendationJson())
+                .contextJson(entry.getContextJson())
                 .build();
     }
 }

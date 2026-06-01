@@ -44,9 +44,6 @@ public class EntryService {
 
         Entry entry = Entry.of(user, request.getText(), today);
         entry.setContextJson(request.getContext());
-        if (request.getSelfCondition() != null) {
-            entry.setSelfCondition(request.getSelfCondition());
-        }
 
         // ML 호출 + 결과 반영
         MlEntriesResponse mlRes = callMlEntries(request, userId);
