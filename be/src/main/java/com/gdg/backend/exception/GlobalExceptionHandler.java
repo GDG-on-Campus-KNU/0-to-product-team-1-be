@@ -3,6 +3,7 @@ package com.gdg.backend.exception;
 import com.gdg.backend.dto.ApiResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,6 +36,14 @@ public class GlobalExceptionHandler {
     public ApiResponse<?> handleValidationException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
         return ApiResponse.fail("VALIDATION_ERROR", message != null ? message : "텍스트 1~200자 입력해주세요");
+    }
+
+    // ML 포워딩 4xx/5xx → ML status·body 그대로 전달 (투명 passthrough)
+    @ExceptionHandler(MlForwardException.class)
+    public ResponseEntity<String> handleMlForward(MlForwardException e) {
+        return ResponseEntity.status(e.getStatus())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(e.getBody());
     }
 
     // 8.3 ML 503 → 503

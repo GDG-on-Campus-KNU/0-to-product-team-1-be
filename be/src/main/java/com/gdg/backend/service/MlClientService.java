@@ -10,6 +10,7 @@ import com.gdg.backend.dto.ml.MlRecommendRequest;
 import com.gdg.backend.dto.ml.MlRecommendResponse;
 import com.gdg.backend.dto.ml.MlReportRequest;
 import com.gdg.backend.dto.ml.MlWeeklyRequest;
+import com.gdg.backend.exception.MlForwardException;
 import com.gdg.backend.exception.MlUnavailableException;
 import com.gdg.backend.exception.QuotaExceededException;
 import lombok.RequiredArgsConstructor;
@@ -204,6 +205,75 @@ public class MlClientService {
                 .timeout(Duration.ofMillis(defaultTimeoutMs)).block();
     }
 
+    /** 드릴 거부 — ML POST /reject (body {user_id, drill_id:정수}) */
+    public java.util.Map<String, Object> rejectDrill(java.util.Map<String, Object> body) {
+        return forward(() -> mlWebClient.post().uri("/reject").bodyValue(body)
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                .timeout(Duration.ofMillis(defaultTimeoutMs)).block());
+    }
+
+    /** 나의 발견 저장 — ML POST /insights/user_discovery (body {user_id, discoveries}) */
+    public java.util.Map<String, Object> postUserDiscovery(java.util.Map<String, Object> body) {
+        return forward(() -> mlWebClient.post().uri("/insights/user_discovery").bodyValue(body)
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                .timeout(Duration.ofMillis(defaultTimeoutMs)).block());
+    }
+
+    /** 나의 발견 조회 — ML GET /insights/user_discovery?user_id=&limit= */
+    public java.util.Map<String, Object> getUserDiscovery(String userId, int limit) {
+        return forward(() -> mlWebClient.get()
+                .uri(u -> u.path("/insights/user_discovery")
+                        .queryParam("user_id", userId)
+                        .queryParam("limit", limit)
+                        .build())
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                .timeout(Duration.ofMillis(defaultTimeoutMs)).block());
+    }
+
+    /** 베이스라인 재계산 — ML POST /baseline/recompute (body {user_id, entries, window_days}) */
+    public java.util.Map<String, Object> recomputeBaseline(java.util.Map<String, Object> body) {
+        return forward(() -> mlWebClient.post().uri("/baseline/recompute").bodyValue(body)
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                .timeout(Duration.ofMillis(weeklyTimeoutMs)).block());
+    }
+
+    /** 베이스라인 조회 — ML GET /baseline?user_id= */
+    public java.util.Map<String, Object> getBaseline(String userId) {
+        return forward(() -> mlWebClient.get()
+                .uri(u -> u.path("/baseline").queryParam("user_id", userId).build())
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                .timeout(Duration.ofMillis(defaultTimeoutMs)).block());
+    }
+
+    /** 최신 주간 리포트 조회 — ML GET /weekly?user_id=&week= */
+    public java.util.Map<String, Object> getWeekly(String userId, String week) {
+        return forward(() -> mlWebClient.get()
+                .uri(u -> u.path("/weekly")
+                        .queryParam("user_id", userId)
+                        .queryParam("week", week)
+                        .build())
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                .timeout(Duration.ofMillis(weeklyTimeoutMs)).block());
+    }
+
+    /** 최신 월간 리포트 조회 — ML GET /monthly?user_id=&month= */
+    public java.util.Map<String, Object> getMonthly(String userId, String month) {
+        return forward(() -> mlWebClient.get()
+                .uri(u -> u.path("/monthly")
+                        .queryParam("user_id", userId)
+                        .queryParam("month", month)
+                        .build())
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<java.util.Map<String, Object>>() {})
+                .timeout(Duration.ofMillis(weeklyTimeoutMs)).block());
+    }
+
     /** 월간 리포트 생성 — ML POST /monthly */
     public java.util.Map<String, Object> callMonthly(String userId, String monthId) {
         try {
@@ -295,6 +365,18 @@ public class MlClientService {
                 .toBodilessEntity()
                 .timeout(Duration.ofMillis(defaultTimeoutMs))
                 .block();
+    }
+
+    /**
+     * 포워딩 호출 래퍼 — ML이 4xx/5xx 반환 시 그 status·body를 그대로 전달(투명 passthrough).
+     * 불투명 500 마스킹 방지.
+     */
+    private <T> T forward(java.util.function.Supplier<T> call) {
+        try {
+            return call.get();
+        } catch (WebClientResponseException e) {
+            throw new MlForwardException(e.getStatusCode(), e.getResponseBodyAsString());
+        }
     }
 
     // ML 429 응답 body에서 retry_after_seconds 추출

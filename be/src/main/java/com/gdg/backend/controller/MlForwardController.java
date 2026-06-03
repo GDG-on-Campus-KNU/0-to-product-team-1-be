@@ -1,6 +1,7 @@
 package com.gdg.backend.controller;
 
 import com.gdg.backend.entity.User;
+import com.gdg.backend.repository.EntryRepository;
 import com.gdg.backend.service.MlClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.HashMap;
 
 import java.util.List;
@@ -22,7 +25,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MlForwardController {
 
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+
     private final MlClientService mlClientService;
+    private final EntryRepository entryRepository;
 
     // 14.5 GET /drills/{id} — 인증 필요(JWT), user 객체 불필요
     @Operation(summary = "드릴 단건 조회")
@@ -100,65 +106,129 @@ public class MlForwardController {
         return ResponseEntity.ok(mlClientService.exportUserData(String.valueOf(user.getUserId())));
     }
 
-    // ── TODO: ML 서버 연동 후 구현 예정 ──
+    // ── ML 포워딩 ──
 
-    @Operation(summary = "[TODO] 나의 발견 저장", description = "ML 서버 연동 후 구현 예정")
+    // 드릴 거부 — ML POST /reject (body {user_id, drill_id:정수})
+    @Operation(summary = "드릴 거부", description = "거부 학습 신호를 ML에 전달합니다. 이후 추천에서 자동 회피.")
+    @PostMapping("/drills/{id}/reject")
+    public ResponseEntity<Map<String, Object>> rejectDrill(
+            @PathVariable String id,
+            @AuthenticationPrincipal User user) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("user_id", String.valueOf(user.getUserId()));
+        body.put("drill_id", Integer.parseInt(id)); // ML은 drill_id 정수형
+        return ResponseEntity.ok(mlClientService.rejectDrill(body));
+    }
+
+    // 나의 발견 저장 — ML POST /insights/user_discovery (week_of 필수)
+    @Operation(summary = "나의 발견 저장", description = "사용자가 적은 발견을 ML에 전달 (키워드 매칭 → affinity 가산).")
     @PostMapping("/discoveries")
-    public ResponseEntity<Void> postDiscoveries() {
-        return ResponseEntity.status(501).build();
+    public ResponseEntity<Map<String, Object>> postDiscoveries(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal User user) {
+        body.put("user_id", String.valueOf(user.getUserId()));
+        body.putIfAbsent("week_of", getCurrentWeekId()); // ML 필수 필드, 미지정 시 이번 주
+        return ResponseEntity.ok(mlClientService.postUserDiscovery(body));
     }
 
-    @Operation(summary = "[TODO] 나의 발견 조회", description = "ML 서버 연동 후 구현 예정")
+    // 나의 발견 조회 — ML GET /insights/user_discovery?user_id=&limit=
+    @Operation(summary = "나의 발견 조회", description = "최근 발견 목록을 ML에서 조회합니다.")
     @GetMapping("/discoveries")
-    public ResponseEntity<Void> getDiscoveries() {
-        return ResponseEntity.status(501).build();
+    public ResponseEntity<Map<String, Object>> getDiscoveries(
+            @RequestParam(defaultValue = "5") int limit,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(
+                mlClientService.getUserDiscovery(String.valueOf(user.getUserId()), limit));
     }
 
-    @Operation(summary = "[TODO] 카테고리 목록 조회", description = "ML 서버 연동 후 구현 예정 — 6 카테고리 + 캘린더 색 매핑")
-    @GetMapping("/categories")
-    public ResponseEntity<Void> getCategories() {
-        return ResponseEntity.status(501).build();
-    }
-
-    @Operation(summary = "[TODO] 베이스라인 스냅샷 생성", description = "ML 서버 연동 후 구현 예정")
+    // 베이스라인 스냅샷 생성 — ML POST /baseline/recompute (entries 30일치 전달)
+    @Operation(summary = "베이스라인 스냅샷 생성", description = "최근 30일 entries를 모아 ML에 재계산 요청.")
     @PostMapping("/baselines/snapshot")
-    public ResponseEntity<Void> postBaselineSnapshot() {
-        return ResponseEntity.status(501).build();
+    public ResponseEntity<Map<String, Object>> postBaselineSnapshot(
+            @AuthenticationPrincipal User user) {
+        Long userId = user.getUserId();
+        LocalDate today = LocalDate.now(KST);
+        List<com.gdg.backend.entity.Entry> entries = entryRepository
+                .findByUser_UserIdAndRecordedDateBetween(userId, today.minusDays(30), today);
+
+        // ML /baseline/recompute 는 entry당 label_result(patterns/emotions/behaviors) 키를 읽음.
+        // (label_result_json·context_json 으로 보내면 ML이 못 읽어 baseline이 빈 값으로 나옴)
+        List<Map<String, Object>> entryData = entries.stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("created_at", e.getCreatedAt() != null ? e.getCreatedAt().toString() : null);
+                    m.put("context_used", e.getContextJson() != null ? e.getContextJson() : Map.of());
+                    m.put("label_result", e.getLabelResultJson() != null ? e.getLabelResultJson() : Map.of());
+                    return m;
+                })
+                .toList();
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("user_id", String.valueOf(userId));
+        body.put("entries", entryData);
+        body.put("window_days", 30);
+        return ResponseEntity.ok(mlClientService.recomputeBaseline(body));
     }
 
-    @Operation(summary = "[TODO] 베이스라인 조회", description = "ML 서버 연동 후 구현 예정")
+    // 베이스라인 조회 — ML GET /baseline?user_id=
+    @Operation(summary = "베이스라인 조회", description = "ML에서 사용자 베이스라인 스냅샷을 조회합니다.")
     @GetMapping("/baselines/{userId}")
-    public ResponseEntity<Void> getBaseline(@PathVariable String userId) {
-        return ResponseEntity.status(501).build();
+    public ResponseEntity<Map<String, Object>> getBaseline(@PathVariable String userId) {
+        return ResponseEntity.ok(mlClientService.getBaseline(userId));
     }
 
-    @Operation(summary = "[TODO] 퀴즈 답변 제출", description = "ML 서버 연동 후 구현 예정")
+    // 퀴즈 답변 제출 — ML PATCH /weekly/quiz (기존 forwarding 재사용)
+    @Operation(summary = "퀴즈 답변 제출", description = "자가진단 답을 ML PATCH /weekly/quiz로 전달. 응답에 match 포함.")
     @PostMapping("/quiz/answer")
-    public ResponseEntity<Void> postQuizAnswer() {
-        return ResponseEntity.status(501).build();
+    public ResponseEntity<Map<String, Object>> postQuizAnswer(
+            @RequestBody Map<String, Object> body,
+            @AuthenticationPrincipal User user) {
+        body.put("user_id", String.valueOf(user.getUserId()));
+        return ResponseEntity.ok(mlClientService.patchWeeklyQuiz(body));
     }
 
-    @Operation(summary = "[TODO] 퀴즈 정답률 조회", description = "ML 서버 연동 후 구현 예정")
+    // 최신 주간 리포트 — ML GET /weekly?user_id=&week=(이번 주)
+    @Operation(summary = "최신 주간 리포트", description = "이번 주 주간 리포트를 ML에서 조회합니다.")
+    @GetMapping("/weekly/latest")
+    public ResponseEntity<Map<String, Object>> getWeeklyLatest(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(
+                mlClientService.getWeekly(String.valueOf(user.getUserId()), getCurrentWeekId()));
+    }
+
+    // 최신 월간 리포트 — ML GET /monthly?user_id=&month=(이번 달)
+    @Operation(summary = "최신 월간 리포트", description = "이번 달 월간 리포트를 ML에서 조회합니다.")
+    @GetMapping("/monthly/latest")
+    public ResponseEntity<Map<String, Object>> getMonthlyLatest(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(
+                mlClientService.getMonthly(String.valueOf(user.getUserId()), getCurrentMonthId()));
+    }
+
+    // ── ML 미지원 (대상 endpoint 없음) — BE 로컬 처리 필요, 추후 별도 구현 ──
+
+    @Operation(summary = "[보류] 퀴즈 정답률 조회",
+            description = "ML에 집계 endpoint 없음. quiz 응답 match를 BE에 누적해 계산 필요 (별도 작업).")
     @GetMapping("/quiz/correct-rate")
     public ResponseEntity<Void> getQuizCorrectRate() {
         return ResponseEntity.status(501).build();
     }
 
-    @Operation(summary = "[TODO] 드릴 거부", description = "ML 서버 연동 후 구현 예정 — 거부 학습 신호")
-    @PostMapping("/drills/{id}/reject")
-    public ResponseEntity<Void> rejectDrill(@PathVariable String id) {
+    @Operation(summary = "[보류] 카테고리 목록 조회",
+            description = "ML에 /categories endpoint 없음. 6색 매핑은 BE 정적 리소스로 제공 필요 (별도 작업).")
+    @GetMapping("/categories")
+    public ResponseEntity<Void> getCategories() {
         return ResponseEntity.status(501).build();
     }
 
-    @Operation(summary = "[TODO] 최신 주간 리포트", description = "ML 서버 연동 후 구현 예정")
-    @GetMapping("/weekly/latest")
-    public ResponseEntity<Void> getWeeklyLatest() {
-        return ResponseEntity.status(501).build();
+    // ── 헬퍼 ──
+
+    private String getCurrentWeekId() {
+        LocalDate today = LocalDate.now(KST);
+        int week = today.get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear());
+        return today.getYear() + "-W" + String.format("%02d", week);
     }
 
-    @Operation(summary = "[TODO] 최신 월간 리포트", description = "ML 서버 연동 후 구현 예정")
-    @GetMapping("/monthly/latest")
-    public ResponseEntity<Void> getMonthlyLatest() {
-        return ResponseEntity.status(501).build();
+    private String getCurrentMonthId() {
+        return LocalDate.now(KST)
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"));
     }
 }
