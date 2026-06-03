@@ -1,0 +1,3 @@
+[submodule "ai"]
+	path = ai
+	url = git@github.com:ksjerev17/stepback-ML-GDG-team1-ml-.git
