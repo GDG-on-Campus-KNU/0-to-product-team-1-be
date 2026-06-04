@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,6 +19,12 @@ public class SwaggerConfig {
                         .title("Step Back API")
                         .description("Step Back 백엔드 API 문서")
                         .version("v1.0.0"))
+                .addServersItem(new Server()
+                        .url("https://stepback.soomn.com")
+                        .description("Production Server"))
+                .addServersItem(new Server()
+                        .url("http://localhost:8080")
+                        .description("Local Development"))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Token"))
                 .components(new Components()
                         .addSecuritySchemes("Bearer Token", new SecurityScheme()
