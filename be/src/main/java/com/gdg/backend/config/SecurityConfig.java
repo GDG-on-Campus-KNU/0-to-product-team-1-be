@@ -58,6 +58,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedOrigin("https://sb.soomn.com");
+        config.addAllowedOrigin("https://stepback.soomn.com");
+        config.addAllowedOrigin("https://0-to-product-team-1-fe.vercel.app");
         config.addAllowedMethod("GET");
         config.addAllowedMethod("POST");
         config.addAllowedMethod("PUT");
