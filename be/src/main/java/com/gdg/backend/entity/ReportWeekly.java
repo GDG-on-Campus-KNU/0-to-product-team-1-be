@@ -40,4 +40,14 @@ public class ReportWeekly {
 
     @Column(name = "generated_at")
     private LocalDateTime generatedAt;
+
+    public static ReportWeekly of(String weekId, Long userId, Map<String, Object> blocksJson, Map<String, Object> visualizationsJson, LocalDateTime generatedAt) {
+        return ReportWeekly.builder()
+                .weekId(weekId)
+                .userId(userId)
+                .blocksJson(blocksJson)
+                .visualizationsJson(visualizationsJson)
+                .generatedAt(generatedAt)
+                .build();
+    }
 }

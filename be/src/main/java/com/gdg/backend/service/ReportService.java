@@ -13,6 +13,7 @@ import com.gdg.backend.repository.ReportWeeklyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -98,16 +99,31 @@ public class ReportService {
                 "호흡", 3, "인지재구성", 2, "마음챙김", 1
         ));
 
-        ReportWeekly report = ReportWeekly.builder()
-                .weekId(weekId)
-                .userId(userId)
-                .blocksJson(blocksJson)
-                .visualizationsJson(visualizationsJson)
-                .generatedAt(LocalDateTime.now(KST))
-                .build();
+        ReportWeekly report = ReportWeekly.of(weekId, userId, blocksJson, visualizationsJson, LocalDateTime.now(KST));
         reportWeeklyRepository.save(report);
 
-        return WeeklyReportResponse.from(report);
+        List<DailyDrillRecord> mockDrills = List.of(
+                DailyDrillRecord.builder().date(now.with(DayOfWeek.MONDAY)).drillCategory("생각 전환").drillCompleted(true).build(),
+                DailyDrillRecord.builder().date(now.with(DayOfWeek.TUESDAY)).drillCategory("긍정 확인").drillCompleted(true).build(),
+                DailyDrillRecord.builder().date(now.with(DayOfWeek.WEDNESDAY)).drillCategory(null).drillCompleted(false).build(),
+                DailyDrillRecord.builder().date(now.with(DayOfWeek.THURSDAY)).drillCategory("마음 챙김").drillCompleted(true).build(),
+                DailyDrillRecord.builder().date(now.with(DayOfWeek.FRIDAY)).drillCategory("호흡 조절").drillCompleted(true).build(),
+                DailyDrillRecord.builder().date(now.with(DayOfWeek.SATURDAY)).drillCategory("산책").drillCompleted(true).build(),
+                DailyDrillRecord.builder().date(now.with(DayOfWeek.SUNDAY)).drillCategory(null).drillCompleted(false).build()
+        );
+
+        LifestyleSummary mockLifestyle = LifestyleSummary.builder()
+                .avgSleepHours(7.2)
+                .avgExerciseMinutes(45)
+                .avgCondition(4.0)
+                .socialMode("보통")
+                .prevWeekSleepHours(8.4)
+                .prevWeekExerciseMinutes(60)
+                .prevWeekCondition(3.5)
+                .prevWeekSocialMode("보통")
+                .build();
+
+        return WeeklyReportResponse.from(report, mockDrills, mockLifestyle);
     }
 
     /**
