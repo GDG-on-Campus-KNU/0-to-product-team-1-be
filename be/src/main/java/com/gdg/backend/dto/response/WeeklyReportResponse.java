@@ -20,6 +20,16 @@ public class WeeklyReportResponse {
     private LifestyleSummary lifestyleSummary;
     private LocalDateTime generatedAt;
 
+    public static WeeklyReportResponse from(ReportWeekly report) {
+        return WeeklyReportResponse.builder()
+                .weekId(report.getWeekId())
+                .userId(report.getUserId())
+                .blocksJson(report.getBlocksJson())
+                .visualizationsJson(report.getVisualizationsJson())
+                .generatedAt(report.getGeneratedAt())
+                .build();
+    }
+
     public static WeeklyReportResponse from(ReportWeekly report, List<DailyDrillRecord> dailyDrills, LifestyleSummary lifestyleSummary) {
         return WeeklyReportResponse.builder()
                 .weekId(report.getWeekId())

@@ -118,7 +118,7 @@ public class ReportService {
                 .avgCondition(4.0)
                 .socialMode("보통")
                 .prevWeekSleepHours(8.4)
-                .prevWeekExerciseMinutes(60)
+                .prevWeekExerciseMinutes(60.0)
                 .prevWeekCondition(3.5)
                 .prevWeekSocialMode("보통")
                 .build();
