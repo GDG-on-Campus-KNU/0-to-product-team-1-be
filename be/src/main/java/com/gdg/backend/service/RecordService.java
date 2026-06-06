@@ -1,6 +1,6 @@
 package com.gdg.backend.service;
 
-import com.gdg.backend.dto.response.CalendarResponse;
+import com.gdg.backend.dto.response.CalendarRecord;
 import com.gdg.backend.dto.response.DailyRecordResponse;
 import com.gdg.backend.entity.Entry;
 import com.gdg.backend.repository.EntryRepository;
@@ -17,13 +17,15 @@ public class RecordService {
 
     private final EntryRepository entryRepository;
 
-    public CalendarResponse getCalendar(Long userId, int year, int month) {
+    public List<CalendarRecord> getCalendar(Long userId, int year, int month) {
         LocalDateTime startOfMonth = LocalDate.of(year, month, 1).atStartOfDay();
         LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
 
-        List<Entry> entries = entryRepository.findAllByUser_UserIdAndCreatedAtBetween(userId, startOfMonth, endOfMonth);
-
-        return CalendarResponse.of(year, month, entries);
+        return entryRepository.findAllByUser_UserIdAndCreatedAtBetween(userId, startOfMonth, endOfMonth)
+                .stream()
+                .filter(entry -> entry.getDrillId() != null)
+                .map(CalendarRecord::from)
+                .toList();
     }
 
     public DailyRecordResponse getDailyRecord(Long userId, LocalDate date) {
