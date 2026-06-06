@@ -27,6 +27,10 @@ public interface EntryRepository extends JpaRepository<Entry, Long> {
 
     List<Entry> findByUser_UserIdAndRecordedDateBetween(Long userId, LocalDate start, LocalDate end);
 
+    int countByUser_UserIdAndRecordedDateBetween(Long userId, LocalDate start, LocalDate end);
+
+    int countByUser_UserIdAndRecordedDateBetweenAndDrillCompletedTrue(Long userId, LocalDate start, LocalDate end);
+
     // 10.4 90일 미사용 조회
     @Query("SELECT DISTINCT e.user.userId FROM Entry e WHERE e.createdAt >= :since")
     List<Long> findActiveUserIdsSince(@Param("since") LocalDateTime since);

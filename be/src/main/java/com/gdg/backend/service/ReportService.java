@@ -4,6 +4,7 @@ import com.gdg.backend.dto.response.DailyDrillRecord;
 import com.gdg.backend.dto.response.LifestyleSummary;
 import com.gdg.backend.dto.response.MonthlyReportResponse;
 import com.gdg.backend.dto.response.WeeklyReportResponse;
+import com.gdg.backend.dto.response.WeeklyReportSummaryResponse;
 import com.gdg.backend.entity.Entry;
 import com.gdg.backend.entity.ReportMonthly;
 import com.gdg.backend.entity.ReportWeekly;
@@ -34,10 +35,32 @@ public class ReportService {
     private final ReportMonthlyRepository reportMonthlyRepository;
     private final EntryRepository entryRepository;
 
-    public List<WeeklyReportResponse> getWeeklyReports(Long userId) {
+    public List<WeeklyReportSummaryResponse> getWeeklyReports(Long userId) {
         return reportWeeklyRepository.findAllByUserIdOrderByGeneratedAtDesc(userId).stream()
-                .map(WeeklyReportResponse::from)
+                .map(report -> toSummaryResponse(report, userId))
                 .toList();
+    }
+
+    private WeeklyReportSummaryResponse toSummaryResponse(ReportWeekly report, Long userId) {
+        LocalDate[] range = getWeekRange(report.getWeekId());
+        int total = countTotalDrills(userId, range);
+        int completed = countCompletedDrills(userId, range);
+
+        return WeeklyReportSummaryResponse.from(report, completed, total);
+    }
+
+    private int countTotalDrills(Long userId, LocalDate[] range) {
+        return entryRepository.countByUser_UserIdAndRecordedDateBetween(userId, range[0], range[1]);
+    }
+
+    private int countCompletedDrills(Long userId, LocalDate[] range) {
+        return entryRepository.countByUser_UserIdAndRecordedDateBetweenAndDrillCompletedTrue(userId, range[0], range[1]);
+    }
+
+    private LocalDate[] getWeekRange(String weekId) {
+        LocalDate monday = LocalDate.parse(weekId + "-1", DateTimeFormatter.ofPattern("YYYY-'W'ww-e", Locale.KOREA));
+        LocalDate sunday = monday.plusDays(6);
+        return new LocalDate[]{monday, sunday};
     }
 
     public WeeklyReportResponse getWeeklyReport(String weekId, Long userId) {
@@ -144,13 +167,6 @@ public class ReportService {
         reportMonthlyRepository.save(report);
 
         return MonthlyReportResponse.from(report);
-    }
-
-    private LocalDate[] getWeekRange(String weekId) {
-        LocalDate monday = LocalDate.parse(weekId + "-1",
-                DateTimeFormatter.ofPattern("YYYY-'W'ww-e", Locale.KOREA));
-        LocalDate sunday = monday.plusDays(6);
-        return new LocalDate[]{monday, sunday};
     }
 
     private List<DailyDrillRecord> buildDailyDrills(Long userId, LocalDate[] range) {
