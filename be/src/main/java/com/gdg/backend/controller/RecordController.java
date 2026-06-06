@@ -1,6 +1,6 @@
 package com.gdg.backend.controller;
 
-import com.gdg.backend.dto.response.CalendarResponse;
+import com.gdg.backend.dto.response.CalendarRecord;
 import com.gdg.backend.dto.response.DailyRecordResponse;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.service.RecordService;
@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Tag(name = "Record", description = "기록 조회 관련 API (Entry 기반 조회)")
 @RestController
@@ -24,7 +25,7 @@ public class RecordController {
 
     @Operation(summary = "캘린더 조회", description = "해당 월의 날짜별 드릴 완료 여부를 조회합니다.")
     @GetMapping("/calendar")
-    public ResponseEntity<CalendarResponse> getCalendar(
+    public ResponseEntity<List<CalendarRecord>> getCalendar(
             @AuthenticationPrincipal User user,
             @RequestParam int year,
             @RequestParam int month) {
