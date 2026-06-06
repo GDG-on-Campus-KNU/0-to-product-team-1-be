@@ -1,8 +1,11 @@
 package com.gdg.backend.service;
 
+import com.gdg.backend.dto.response.DailyDrillRecord;
+import com.gdg.backend.dto.response.LifestyleSummary;
 import com.gdg.backend.dto.response.MonthlyReportResponse;
 import com.gdg.backend.dto.response.WeeklyReportResponse;
 import com.gdg.backend.dto.response.WeeklyReportSummaryResponse;
+import com.gdg.backend.entity.Entry;
 import com.gdg.backend.entity.ReportMonthly;
 import com.gdg.backend.entity.ReportWeekly;
 import com.gdg.backend.repository.EntryRepository;
@@ -11,6 +14,7 @@ import com.gdg.backend.repository.ReportWeeklyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -19,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,9 +64,14 @@ public class ReportService {
     }
 
     public WeeklyReportResponse getWeeklyReport(String weekId, Long userId) {
-        return reportWeeklyRepository.findByWeekIdAndUserId(weekId, userId)
-                .map(WeeklyReportResponse::from)
+        ReportWeekly report = reportWeeklyRepository.findByWeekIdAndUserId(weekId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주간 리포트입니다."));
+
+        LocalDate[] range = getWeekRange(weekId);
+        List<DailyDrillRecord> dailyDrills = buildDailyDrills(userId, range);
+        LifestyleSummary lifestyleSummary = buildLifestyleSummary(userId, range);
+
+        return WeeklyReportResponse.from(report, dailyDrills, lifestyleSummary);
     }
 
     public List<MonthlyReportResponse> getMonthlyReports(Long userId) {
@@ -112,16 +122,22 @@ public class ReportService {
                 "호흡", 3, "인지재구성", 2, "마음챙김", 1
         ));
 
-        ReportWeekly report = ReportWeekly.builder()
-                .weekId(weekId)
-                .userId(userId)
-                .blocksJson(blocksJson)
-                .visualizationsJson(visualizationsJson)
-                .generatedAt(LocalDateTime.now(KST))
-                .build();
+        ReportWeekly report = ReportWeekly.of(weekId, userId, blocksJson, visualizationsJson, LocalDateTime.now(KST));
         reportWeeklyRepository.save(report);
 
-        return WeeklyReportResponse.from(report);
+        List<DailyDrillRecord> mockDrills = List.of(
+                DailyDrillRecord.of(now.with(DayOfWeek.MONDAY), "생각 전환", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.TUESDAY), "긍정 확인", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.WEDNESDAY), null, false),
+                DailyDrillRecord.of(now.with(DayOfWeek.THURSDAY), "마음 챙김", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.FRIDAY), "호흡 조절", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.SATURDAY), "산책", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.SUNDAY), null, false)
+        );
+
+        LifestyleSummary mockLifestyle = LifestyleSummary.of(7.2, 45, 4.0, "보통", 8.4, 60.0, 3.5, "보통");
+
+        return WeeklyReportResponse.from(report, mockDrills, mockLifestyle);
     }
 
     /**
@@ -147,14 +163,51 @@ public class ReportService {
                 "suggestion", "현재 루틴을 유지하면서 마음챙김 드릴을 추가해보세요."
         ));
 
-        ReportMonthly report = ReportMonthly.builder()
-                .monthId(monthId)
-                .userId(userId)
-                .blocksJson(blocksJson)
-                .generatedAt(LocalDateTime.now(KST))
-                .build();
+        ReportMonthly report = ReportMonthly.of(monthId, userId, blocksJson, LocalDateTime.now(KST));
         reportMonthlyRepository.save(report);
 
         return MonthlyReportResponse.from(report);
+    }
+
+    private List<DailyDrillRecord> buildDailyDrills(Long userId, LocalDate[] range) {
+        return entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0], range[1])
+                .stream()
+                .map(entry -> DailyDrillRecord.of(entry.getRecordedDate(), entry.getDrillCategory(), entry.getDrillCompleted()))
+                .toList();
+    }
+
+    private LifestyleSummary buildLifestyleSummary(Long userId, LocalDate[] range) {
+        List<Entry> entries = entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0], range[1]);
+        List<Entry> prevEntries = entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0].minusDays(7), range[0].minusDays(1));
+
+        return LifestyleSummary.of(
+                avgFromContext(entries, "sleep_hours"),
+                avgFromContext(entries, "exercise_today"),
+                avgFromContext(entries, "self_condition"),
+                modeFromContext(entries, "social_today"),
+                avgFromContext(prevEntries, "sleep_hours"),
+                avgFromContext(prevEntries, "exercise_today"),
+                avgFromContext(prevEntries, "self_condition"),
+                modeFromContext(prevEntries, "social_today")
+        );
+    }
+
+    private double avgFromContext(List<Entry> entries, String key) {
+        return entries.stream()
+                .filter(e -> e.getContextJson() != null && e.getContextJson().containsKey(key))
+                .mapToDouble(e -> ((Number) e.getContextJson().get(key)).doubleValue())
+                .average()
+                .orElse(0.0);
+    }
+
+    private String modeFromContext(List<Entry> entries, String key) {
+        return entries.stream()
+                .filter(e -> e.getContextJson() != null && e.getContextJson().containsKey(key))
+                .map(e -> e.getContextJson().get(key).toString())
+                .collect(Collectors.groupingBy(v -> v, Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 }

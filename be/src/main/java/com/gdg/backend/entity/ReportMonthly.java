@@ -36,4 +36,13 @@ public class ReportMonthly {
 
     @Column(name = "generated_at")
     private LocalDateTime generatedAt;
+
+    public static ReportMonthly of(String monthId, Long userId, Map<String, Object> blocksJson, LocalDateTime generatedAt) {
+        return ReportMonthly.builder()
+                .monthId(monthId)
+                .userId(userId)
+                .blocksJson(blocksJson)
+                .generatedAt(generatedAt)
+                .build();
+    }
 }
