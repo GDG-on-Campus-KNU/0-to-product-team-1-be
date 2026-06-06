@@ -2,6 +2,7 @@ package com.gdg.backend.controller;
 
 import com.gdg.backend.dto.response.MonthlyReportResponse;
 import com.gdg.backend.dto.response.WeeklyReportResponse;
+import com.gdg.backend.dto.response.WeeklyReportSummaryResponse;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +24,7 @@ public class ReportController {
 
     @Operation(summary = "주간 리포트 목록", description = "해당 유저의 주간 리포트를 최신순으로 조회합니다.")
     @GetMapping("/weekly")
-    public ResponseEntity<List<WeeklyReportResponse>> getWeeklyReports(
+    public ResponseEntity<List<WeeklyReportSummaryResponse>> getWeeklyReports(
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(reportService.getWeeklyReports(user.getUserId()));
     }
