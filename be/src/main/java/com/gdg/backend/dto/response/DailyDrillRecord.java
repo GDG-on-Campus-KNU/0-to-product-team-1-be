@@ -11,4 +11,12 @@ public class DailyDrillRecord {
     private LocalDate date;
     private String drillCategory;
     private Boolean drillCompleted;
+
+    public static DailyDrillRecord of(LocalDate date, String drillCategory, Boolean drillCompleted) {
+        return DailyDrillRecord.builder()
+                .date(date)
+                .drillCategory(drillCategory)
+                .drillCompleted(drillCompleted)
+                .build();
+    }
 }

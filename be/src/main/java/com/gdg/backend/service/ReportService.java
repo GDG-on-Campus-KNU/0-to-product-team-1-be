@@ -103,25 +103,16 @@ public class ReportService {
         reportWeeklyRepository.save(report);
 
         List<DailyDrillRecord> mockDrills = List.of(
-                DailyDrillRecord.builder().date(now.with(DayOfWeek.MONDAY)).drillCategory("생각 전환").drillCompleted(true).build(),
-                DailyDrillRecord.builder().date(now.with(DayOfWeek.TUESDAY)).drillCategory("긍정 확인").drillCompleted(true).build(),
-                DailyDrillRecord.builder().date(now.with(DayOfWeek.WEDNESDAY)).drillCategory(null).drillCompleted(false).build(),
-                DailyDrillRecord.builder().date(now.with(DayOfWeek.THURSDAY)).drillCategory("마음 챙김").drillCompleted(true).build(),
-                DailyDrillRecord.builder().date(now.with(DayOfWeek.FRIDAY)).drillCategory("호흡 조절").drillCompleted(true).build(),
-                DailyDrillRecord.builder().date(now.with(DayOfWeek.SATURDAY)).drillCategory("산책").drillCompleted(true).build(),
-                DailyDrillRecord.builder().date(now.with(DayOfWeek.SUNDAY)).drillCategory(null).drillCompleted(false).build()
+                DailyDrillRecord.of(now.with(DayOfWeek.MONDAY), "생각 전환", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.TUESDAY), "긍정 확인", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.WEDNESDAY), null, false),
+                DailyDrillRecord.of(now.with(DayOfWeek.THURSDAY), "마음 챙김", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.FRIDAY), "호흡 조절", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.SATURDAY), "산책", true),
+                DailyDrillRecord.of(now.with(DayOfWeek.SUNDAY), null, false)
         );
 
-        LifestyleSummary mockLifestyle = LifestyleSummary.builder()
-                .avgSleepHours(7.2)
-                .avgExerciseMinutes(45)
-                .avgCondition(4.0)
-                .socialMode("보통")
-                .prevWeekSleepHours(8.4)
-                .prevWeekExerciseMinutes(60.0)
-                .prevWeekCondition(3.5)
-                .prevWeekSocialMode("보통")
-                .build();
+        LifestyleSummary mockLifestyle = LifestyleSummary.of(7.2, 45, 4.0, "보통", 8.4, 60.0, 3.5, "보통");
 
         return WeeklyReportResponse.from(report, mockDrills, mockLifestyle);
     }
@@ -149,12 +140,7 @@ public class ReportService {
                 "suggestion", "현재 루틴을 유지하면서 마음챙김 드릴을 추가해보세요."
         ));
 
-        ReportMonthly report = ReportMonthly.builder()
-                .monthId(monthId)
-                .userId(userId)
-                .blocksJson(blocksJson)
-                .generatedAt(LocalDateTime.now(KST))
-                .build();
+        ReportMonthly report = ReportMonthly.of(monthId, userId, blocksJson, LocalDateTime.now(KST));
         reportMonthlyRepository.save(report);
 
         return MonthlyReportResponse.from(report);
@@ -170,11 +156,7 @@ public class ReportService {
     private List<DailyDrillRecord> buildDailyDrills(Long userId, LocalDate[] range) {
         return entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0], range[1])
                 .stream()
-                .map(entry -> DailyDrillRecord.builder()
-                        .date(entry.getRecordedDate())
-                        .drillCategory(entry.getDrillCategory())
-                        .drillCompleted(entry.getDrillCompleted())
-                        .build())
+                .map(entry -> DailyDrillRecord.of(entry.getRecordedDate(), entry.getDrillCategory(), entry.getDrillCompleted()))
                 .toList();
     }
 
@@ -182,16 +164,16 @@ public class ReportService {
         List<Entry> entries = entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0], range[1]);
         List<Entry> prevEntries = entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0].minusDays(7), range[0].minusDays(1));
 
-        return LifestyleSummary.builder()
-                .avgSleepHours(avgFromContext(entries, "sleep_hours"))
-                .avgExerciseMinutes(avgFromContext(entries, "exercise_today"))
-                .avgCondition(avgFromContext(entries, "self_condition"))
-                .socialMode(modeFromContext(entries, "social_today"))
-                .prevWeekSleepHours(avgFromContext(prevEntries, "sleep_hours"))
-                .prevWeekExerciseMinutes(avgFromContext(prevEntries, "exercise_today"))
-                .prevWeekCondition(avgFromContext(prevEntries, "self_condition"))
-                .prevWeekSocialMode(modeFromContext(prevEntries, "social_today"))
-                .build();
+        return LifestyleSummary.of(
+                avgFromContext(entries, "sleep_hours"),
+                avgFromContext(entries, "exercise_today"),
+                avgFromContext(entries, "self_condition"),
+                modeFromContext(entries, "social_today"),
+                avgFromContext(prevEntries, "sleep_hours"),
+                avgFromContext(prevEntries, "exercise_today"),
+                avgFromContext(prevEntries, "self_condition"),
+                modeFromContext(prevEntries, "social_today")
+        );
     }
 
     private double avgFromContext(List<Entry> entries, String key) {

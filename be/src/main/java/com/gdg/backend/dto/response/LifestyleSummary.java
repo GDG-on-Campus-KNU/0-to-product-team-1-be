@@ -14,4 +14,18 @@ public class LifestyleSummary {
     private Double prevWeekExerciseMinutes;
     private Double prevWeekCondition;
     private String prevWeekSocialMode;
+
+    public static LifestyleSummary of(double avgSleepHours, double avgExerciseMinutes, double avgCondition, String socialMode,
+                                      Double prevWeekSleepHours, Double prevWeekExerciseMinutes, Double prevWeekCondition, String prevWeekSocialMode) {
+        return LifestyleSummary.builder()
+                .avgSleepHours(avgSleepHours)
+                .avgExerciseMinutes(avgExerciseMinutes)
+                .avgCondition(avgCondition)
+                .socialMode(socialMode)
+                .prevWeekSleepHours(prevWeekSleepHours)
+                .prevWeekExerciseMinutes(prevWeekExerciseMinutes)
+                .prevWeekCondition(prevWeekCondition)
+                .prevWeekSocialMode(prevWeekSocialMode)
+                .build();
+    }
 }
