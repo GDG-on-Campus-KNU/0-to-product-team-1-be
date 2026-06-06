@@ -1,7 +1,7 @@
 package com.gdg.backend.service;
 
 import com.gdg.backend.dto.response.CalendarRecord;
-import com.gdg.backend.dto.response.DailyRecordResponse;
+import com.gdg.backend.dto.response.DrillTodayResponse;
 import com.gdg.backend.entity.Entry;
 import com.gdg.backend.repository.EntryRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +28,12 @@ public class RecordService {
                 .toList();
     }
 
-    public DailyRecordResponse getDailyRecord(Long userId, LocalDate date) {
+    public DrillTodayResponse getDailyRecord(Long userId, LocalDate date) {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
         return entryRepository.findFirstByUser_UserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, startOfDay, endOfDay)
-                .map(DailyRecordResponse::from)
-                .orElse(DailyRecordResponse.empty());
+                .map(DrillTodayResponse::from)
+                .orElse(DrillTodayResponse.empty());
     }
 }

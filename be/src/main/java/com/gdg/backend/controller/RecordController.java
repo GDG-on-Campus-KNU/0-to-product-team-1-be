@@ -1,7 +1,7 @@
 package com.gdg.backend.controller;
 
 import com.gdg.backend.dto.response.CalendarRecord;
-import com.gdg.backend.dto.response.DailyRecordResponse;
+import com.gdg.backend.dto.response.DrillTodayResponse;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.service.RecordService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +34,7 @@ public class RecordController {
 
     @Operation(summary = "일별 기록 조회", description = "특정 날짜의 드릴 상세 정보를 조회합니다.")
     @GetMapping("/daily/{date}")
-    public ResponseEntity<DailyRecordResponse> getDailyRecord(
+    public ResponseEntity<DrillTodayResponse> getDailyRecord(
             @AuthenticationPrincipal User user,
             @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         return ResponseEntity.ok(recordService.getDailyRecord(user.getUserId(), date));
