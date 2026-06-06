@@ -1,9 +1,13 @@
 package com.gdg.backend.service;
 
+import com.gdg.backend.dto.response.DailyDrillRecord;
+import com.gdg.backend.dto.response.LifestyleSummary;
 import com.gdg.backend.dto.response.MonthlyReportResponse;
 import com.gdg.backend.dto.response.WeeklyReportResponse;
+import com.gdg.backend.entity.Entry;
 import com.gdg.backend.entity.ReportMonthly;
 import com.gdg.backend.entity.ReportWeekly;
+import com.gdg.backend.repository.EntryRepository;
 import com.gdg.backend.repository.ReportMonthlyRepository;
 import com.gdg.backend.repository.ReportWeeklyRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +19,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +31,7 @@ public class ReportService {
 
     private final ReportWeeklyRepository reportWeeklyRepository;
     private final ReportMonthlyRepository reportMonthlyRepository;
+    private final EntryRepository entryRepository;
 
     public List<WeeklyReportResponse> getWeeklyReports(Long userId) {
         return reportWeeklyRepository.findAllByUserIdOrderByGeneratedAtDesc(userId).stream()
@@ -33,9 +40,14 @@ public class ReportService {
     }
 
     public WeeklyReportResponse getWeeklyReport(String weekId, Long userId) {
-        return reportWeeklyRepository.findByWeekIdAndUserId(weekId, userId)
-                .map(WeeklyReportResponse::from)
+        ReportWeekly report = reportWeeklyRepository.findByWeekIdAndUserId(weekId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주간 리포트입니다."));
+
+        LocalDate[] range = getWeekRange(weekId);
+        List<DailyDrillRecord> dailyDrills = buildDailyDrills(userId, range);
+        LifestyleSummary lifestyleSummary = buildLifestyleSummary(userId, range);
+
+        return WeeklyReportResponse.from(report, dailyDrills, lifestyleSummary);
     }
 
     public List<MonthlyReportResponse> getMonthlyReports(Long userId) {
@@ -130,5 +142,58 @@ public class ReportService {
         reportMonthlyRepository.save(report);
 
         return MonthlyReportResponse.from(report);
+    }
+
+    private LocalDate[] getWeekRange(String weekId) {
+        LocalDate monday = LocalDate.parse(weekId + "-1",
+                DateTimeFormatter.ofPattern("YYYY-'W'ww-e", Locale.KOREA));
+        LocalDate sunday = monday.plusDays(6);
+        return new LocalDate[]{monday, sunday};
+    }
+
+    private List<DailyDrillRecord> buildDailyDrills(Long userId, LocalDate[] range) {
+        return entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0], range[1])
+                .stream()
+                .map(entry -> DailyDrillRecord.builder()
+                        .date(entry.getRecordedDate())
+                        .drillCategory(entry.getDrillCategory())
+                        .drillCompleted(entry.getDrillCompleted())
+                        .build())
+                .toList();
+    }
+
+    private LifestyleSummary buildLifestyleSummary(Long userId, LocalDate[] range) {
+        List<Entry> entries = entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0], range[1]);
+        List<Entry> prevEntries = entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, range[0].minusDays(7), range[0].minusDays(1));
+
+        return LifestyleSummary.builder()
+                .avgSleepHours(avgFromContext(entries, "sleep_hours"))
+                .avgExerciseMinutes(avgFromContext(entries, "exercise_today"))
+                .avgCondition(avgFromContext(entries, "self_condition"))
+                .socialMode(modeFromContext(entries, "social_today"))
+                .prevWeekSleepHours(avgFromContext(prevEntries, "sleep_hours"))
+                .prevWeekExerciseMinutes(avgFromContext(prevEntries, "exercise_today"))
+                .prevWeekCondition(avgFromContext(prevEntries, "self_condition"))
+                .prevWeekSocialMode(modeFromContext(prevEntries, "social_today"))
+                .build();
+    }
+
+    private double avgFromContext(List<Entry> entries, String key) {
+        return entries.stream()
+                .filter(e -> e.getContextJson() != null && e.getContextJson().containsKey(key))
+                .mapToDouble(e -> ((Number) e.getContextJson().get(key)).doubleValue())
+                .average()
+                .orElse(0.0);
+    }
+
+    private String modeFromContext(List<Entry> entries, String key) {
+        return entries.stream()
+                .filter(e -> e.getContextJson() != null && e.getContextJson().containsKey(key))
+                .map(e -> e.getContextJson().get(key).toString())
+                .collect(Collectors.groupingBy(v -> v, Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 }
