@@ -109,17 +109,40 @@ public class ReportService {
         ));
 
         Map<String, Object> visualizationsJson = new HashMap<>();
-        visualizationsJson.put("emotion_trend", List.of(
-                Map.of("day", "Mon", "score", 3),
-                Map.of("day", "Tue", "score", 4),
-                Map.of("day", "Wed", "score", 2),
-                Map.of("day", "Thu", "score", 5),
-                Map.of("day", "Fri", "score", 3),
-                Map.of("day", "Sat", "score", 4),
-                Map.of("day", "Sun", "score", 4)
+        visualizationsJson.put("emotion_pentagon", Map.of(
+                "axes", List.of(
+                        Map.of("label", "불안", "value", 0.236),
+                        Map.of("label", "우울", "value", 0.071),
+                        Map.of("label", "분노", "value", 0.057),
+                        Map.of("label", "죄책", "value", 0.0),
+                        Map.of("label", "중립", "value", 0.357)
+                ),
+                "dominant", "중립",
+                "entries_used", 7
         ));
-        visualizationsJson.put("category_distribution", Map.of(
-                "호흡", 3, "인지재구성", 2, "마음챙김", 1
+        visualizationsJson.put("condition_flow", Map.of(
+                "points", List.of(
+                        Map.of("dow", "월", "avg_condition", 4.0, "count", 1),
+                        Map.of("dow", "화", "avg_condition", 4.0, "count", 1),
+                        Map.of("dow", "수", "avg_condition", 3.0, "count", 1),
+                        Map.of("dow", "목", "avg_condition", 2.0, "count", 1),
+                        Map.of("dow", "금", "avg_condition", 2.0, "count", 1),
+                        Map.of("dow", "토", "avg_condition", 3.0, "count", 1),
+                        Map.of("dow", "일", "avg_condition", 4.0, "count", 1)
+                )
+        ));
+        visualizationsJson.put("pattern_diff", List.of(
+                Map.of("pattern", "미래예측", "current_percent", 75.0, "prev_percent", 60.0, "delta_percent", 15.0, "arrow", "up"),
+                Map.of("pattern", "자기비난", "current_percent", 25.0, "prev_percent", 30.0, "delta_percent", -5.0, "arrow", "down")
+        ));
+        visualizationsJson.put("discoveries", List.of(
+                Map.of("text", "잠이 부족한 날 미래예측 표현이 더 자주 보였어요", "category", "context", "source", "system"),
+                Map.of("text", "주말에 컨디션이 좋아졌어요", "category", "context", "source", "system"),
+                Map.of("text", "이번 주 '괜찮은 하루' 표현이 1회 보였어요", "category", "cognitive", "source", "system", "count", 1)
+        ));
+        visualizationsJson.put("weekly_coaching", Map.of(
+                "state", Map.of("key", "fatigue", "label", "소진기", "summary", "주 전반이 더 좋았고 후반에 가라앉는 흐름이 보였어요."),
+                "next_week_focus", Map.of("category", "grounding", "label_ko", "마음 챙김", "reason", "다음 주엔 마음을 먼저 가라앉히는 연습이 도움이 될 수 있어요.")
         ));
 
         ReportWeekly report = ReportWeekly.of(weekId, userId, blocksJson, visualizationsJson, LocalDateTime.now(KST));
