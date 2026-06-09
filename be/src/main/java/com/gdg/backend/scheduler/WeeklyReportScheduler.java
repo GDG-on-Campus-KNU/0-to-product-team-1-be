@@ -58,8 +58,8 @@ public class WeeklyReportScheduler {
                             Map<String, Object> m = new java.util.HashMap<>();
                             m.put("created_at", e.getCreatedAt() != null ? e.getCreatedAt().toString() : null);
                             m.put("self_condition", e.getContextJson() != null ? e.getContextJson().getOrDefault("self_condition", 0) : 0);
-                            m.put("context_json", e.getContextJson() != null ? e.getContextJson() : Map.of());
-                            m.put("label_result_json", e.getLabelResultJson() != null ? e.getLabelResultJson() : Map.of());
+                            m.put("context", e.getContextJson() != null ? e.getContextJson() : Map.of());
+                            m.put("label_result", e.getLabelResultJson() != null ? e.getLabelResultJson() : Map.of());
                             return m;
                         })
                         .collect(Collectors.toList());

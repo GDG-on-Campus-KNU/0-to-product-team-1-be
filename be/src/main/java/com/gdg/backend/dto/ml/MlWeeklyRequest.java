@@ -14,7 +14,7 @@ public class MlWeeklyRequest {
     @JsonProperty("user_id")
     private String userId;
 
-    @JsonProperty("week_id")
+    @JsonProperty("week")
     private String weekId;
 
     @JsonProperty("entry_count")
