@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class RecordService {
@@ -18,10 +19,10 @@ public class RecordService {
     private final EntryRepository entryRepository;
 
     public List<CalendarRecord> getCalendar(Long userId, int year, int month) {
-        LocalDateTime startOfMonth = LocalDate.of(year, month, 1).atStartOfDay();
-        LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
+        LocalDate startOfMonth = LocalDate.of(year, month, 1);
+        LocalDate endOfMonth = startOfMonth.plusMonths(1);
 
-        return entryRepository.findAllByUser_UserIdAndCreatedAtBetween(userId, startOfMonth, endOfMonth)
+        return entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, startOfMonth, endOfMonth)
                 .stream()
                 .filter(entry -> entry.getDrillId() != null)
                 .map(CalendarRecord::from)
