@@ -1,6 +1,5 @@
 package com.gdg.backend.scheduler;
 
-import com.gdg.backend.dto.ml.MlReportRequest;
 import com.gdg.backend.dto.ml.MlWeeklyRequest;
 import com.gdg.backend.entity.ReportWeekly;
 import com.gdg.backend.repository.EntryRepository;
@@ -64,12 +63,6 @@ public class WeeklyReportScheduler {
                         })
                         .collect(Collectors.toList());
 
-                MlReportRequest reportReq = MlReportRequest.builder()
-                        .userId(String.valueOf(user.getUserId()))
-                        .weekId(weekId)
-                        .build();
-                Map<String, Object> reportResult = mlClientService.callReports(reportReq);
-
                 MlWeeklyRequest weeklyReq = MlWeeklyRequest.builder()
                         .userId(String.valueOf(user.getUserId()))
                         .weekId(weekId)
@@ -78,12 +71,24 @@ public class WeeklyReportScheduler {
                         .build();
                 Map<String, Object> weeklyResult = mlClientService.callWeekly(weeklyReq);
 
+                // blocksJson: 텍스트/요약 블록
+                List<String> blockKeys = List.of("overview", "dominant_pattern", "drill_action",
+                        "self_check_quiz", "baseline_card", "weekly_coaching");
+                Map<String, Object> blocksJson = new java.util.HashMap<>();
+                blockKeys.forEach(k -> { if (weeklyResult.containsKey(k)) blocksJson.put(k, weeklyResult.get(k)); });
+
+                // visualizationsJson: 차트/시각화 데이터
+                List<String> vizKeys = List.of("condition_flow", "pattern_diff", "discoveries",
+                        "emotion_pentagon", "calendar_distribution", "pattern_diff_message", "discoveries_message");
+                Map<String, Object> visualizationsJson = new java.util.HashMap<>();
+                vizKeys.forEach(k -> { if (weeklyResult.containsKey(k)) visualizationsJson.put(k, weeklyResult.get(k)); });
+
                 ReportWeekly report = ReportWeekly.builder()
                         .weekId(weekId)
                         .userId(user.getUserId())
                         .user(user)
-                        .blocksJson(reportResult)
-                        .visualizationsJson(weeklyResult)
+                        .blocksJson(blocksJson)
+                        .visualizationsJson(visualizationsJson)
                         .generatedAt(LocalDateTime.now(KST))
                         .build();
                 reportWeeklyRepository.save(report);
