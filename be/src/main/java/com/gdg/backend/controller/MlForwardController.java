@@ -1,5 +1,6 @@
 package com.gdg.backend.controller;
 
+import com.gdg.backend.dto.request.DiscoveriesRequest;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.repository.EntryRepository;
 import com.gdg.backend.service.MlClientService;
@@ -124,10 +125,12 @@ public class MlForwardController {
     @Operation(summary = "나의 발견 저장", description = "사용자가 적은 발견을 ML에 전달 (키워드 매칭 → affinity 가산).")
     @PostMapping("/discoveries")
     public ResponseEntity<Map<String, Object>> postDiscoveries(
-            @RequestBody Map<String, Object> body,
+            @RequestBody @jakarta.validation.Valid DiscoveriesRequest request,
             @AuthenticationPrincipal User user) {
+        Map<String, Object> body = new HashMap<>();
         body.put("user_id", String.valueOf(user.getUserId()));
-        body.putIfAbsent("week_of", getCurrentWeekId()); // ML 필수 필드, 미지정 시 이번 주
+        body.put("week_of", getCurrentWeekId());
+        body.put("discoveries", request.getDiscoveries());
         return ResponseEntity.ok(mlClientService.postUserDiscovery(body));
     }
 
