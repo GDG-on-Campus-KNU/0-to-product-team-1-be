@@ -76,8 +76,8 @@ public class EntryService {
             switch (type) {
                 case "drill" -> {
                     Map<String, Object> drill = (Map<String, Object>) rec.get("drill");
-                    if (drill != null && drill.get("drill_id") != null) {
-                        Object rawId = drill.get("drill_id");
+                    if (drill != null && (drill.get("id") != null || drill.get("drill_id") != null)) {
+                        Object rawId = drill.get("id") != null ? drill.get("id") : drill.get("drill_id");
                         if (rawId instanceof Integer i) entry.setDrillId(i);
                         else if (rawId instanceof String s) entry.setDrillId(Integer.parseInt(s.replaceAll("[^0-9]", "")));
                         else if (rawId instanceof Number n) entry.setDrillId(n.intValue());

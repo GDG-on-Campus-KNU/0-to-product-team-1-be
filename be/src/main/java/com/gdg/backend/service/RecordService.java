@@ -24,7 +24,8 @@ public class RecordService {
 
         return entryRepository.findByUser_UserIdAndRecordedDateBetween(userId, startOfMonth, endOfMonth)
                 .stream()
-                .filter(entry -> entry.getDrillId() != null)
+                .filter(entry -> entry.getDrillId() != null
+                        || (entry.getRecommendationJson() != null && entry.getRecommendationJson().get("drill") != null))
                 .map(CalendarRecord::from)
                 .toList();
     }
