@@ -89,10 +89,23 @@ public class ReportService {
     /**
      * 테스트용 Mock 주간 리포트 생성 (ML 서버 불필요)
      */
-    public WeeklyReportResponse createMockWeeklyReport(Long userId) {
+    public WeeklyReportResponse createMockWeeklyReport(Long userId, String requestedWeekId) {
         LocalDate now = LocalDate.now(KST);
-        int week = now.get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear());
-        String weekId = now.getYear() + "-W" + String.format("%02d", week);
+        String weekId;
+        if (requestedWeekId != null && !requestedWeekId.isBlank()) {
+            if (!requestedWeekId.matches("\\d{4}-W\\d{2}")) {
+                throw new IllegalArgumentException("weekId 형식이 올바르지 않습니다. 예: 2026-W23");
+            }
+            weekId = requestedWeekId;
+            // 일별 드릴 날짜를 요청 주차의 월~일에 맞춤
+            int year = Integer.parseInt(weekId.substring(0, 4));
+            int week = Integer.parseInt(weekId.substring(6));
+            now = now.with(java.time.temporal.WeekFields.ISO.weekBasedYear(), year)
+                    .with(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear(), week);
+        } else {
+            int week = now.get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear());
+            weekId = now.getYear() + "-W" + String.format("%02d", week);
+        }
 
         Map<String, Object> blocksJson = new HashMap<>();
         blocksJson.put("block1_action_rate", Map.of(
