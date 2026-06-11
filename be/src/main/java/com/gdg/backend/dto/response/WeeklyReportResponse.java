@@ -41,4 +41,18 @@ public class WeeklyReportResponse {
                 .generatedAt(report.getGeneratedAt())
                 .build();
     }
+
+    public static WeeklyReportResponse from(ReportWeekly report, Map<String, Object> blocksJson,
+                                            Map<String, Object> visualizationsJson,
+                                            List<DailyDrillRecord> dailyDrills, LifestyleSummary lifestyleSummary) {
+        return WeeklyReportResponse.builder()
+                .weekId(report.getWeekId())
+                .userId(report.getUserId())
+                .blocksJson(blocksJson)
+                .visualizationsJson(visualizationsJson)
+                .dailyDrills(dailyDrills)
+                .lifestyleSummary(lifestyleSummary)
+                .generatedAt(report.getGeneratedAt())
+                .build();
+    }
 }

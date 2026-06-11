@@ -71,7 +71,13 @@ public class ReportService {
         List<DailyDrillRecord> dailyDrills = buildDailyDrills(userId, range);
         LifestyleSummary lifestyleSummary = buildLifestyleSummary(userId, range);
 
-        return WeeklyReportResponse.from(report, dailyDrills, lifestyleSummary);
+        // ML 실제 응답 구조 → FE 기대 구조로 호환 변환 (DB 원본은 보존, 응답 시점에만 변환)
+        Map<String, Object> feBlocks = WeeklyReportCompat.toFeBlocks(
+                report.getBlocksJson(), report.getVisualizationsJson());
+        Map<String, Object> feVisualizations = WeeklyReportCompat.toFeVisualizations(
+                report.getBlocksJson(), report.getVisualizationsJson());
+
+        return WeeklyReportResponse.from(report, feBlocks, feVisualizations, dailyDrills, lifestyleSummary);
     }
 
     public List<MonthlyReportResponse> getMonthlyReports(Long userId) {
