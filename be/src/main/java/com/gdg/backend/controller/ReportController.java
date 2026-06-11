@@ -69,12 +69,13 @@ public class ReportController {
 
     @Operation(
             summary = "[TEST] Mock 주간 리포트 생성",
-            description = "ML 서버 없이 더미 데이터로 주간 리포트를 생성 "
+            description = "ML 서버 없이 더미 데이터로 주간 리포트를 생성. weekId(예: 2026-W23) 지정 시 해당 주차로 생성, 미지정 시 현재 주차"
     )
     @PostMapping("/weekly/test")
     public ResponseEntity<WeeklyReportResponse> createMockWeeklyReport(
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(reportService.createMockWeeklyReport(user.getUserId()));
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) String weekId) {
+        return ResponseEntity.ok(reportService.createMockWeeklyReport(user.getUserId(), weekId));
     }
 
     @Operation(
