@@ -40,7 +40,7 @@ ml:
   service:
     base-url: ${ML_SERVICE_URL:http://localhost:8001}
     timeout: 30000
-    timeout-label: 10000
+    timeout-label: 5000
     timeout-recommend: 3000
     timeout-weekly: 5000
     timeout-health: 3000
