@@ -1,6 +1,7 @@
 package com.gdg.backend.controller;
 
 import com.gdg.backend.dto.ApiResponse;
+import com.gdg.backend.scheduler.BaselineUpdateScheduler;
 import com.gdg.backend.service.MlClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final MlClientService mlClientService;
+    private final BaselineUpdateScheduler baselineUpdateScheduler;
 
     @Value("${admin.token:}")
     private String adminToken;
@@ -38,5 +40,22 @@ public class AdminController {
 
         mlClientService.resetQuota(userId, adminToken);
         return ResponseEntity.ok(ApiResponse.success("quota 리셋 완료"));
+    }
+
+    /**
+     * 14.16 baseline 갱신 수동 트리거 (cron과 동일 로직)
+     */
+    @Operation(summary = "Baseline 갱신 수동 실행", description = "전체 유저 최근 30일 entries로 ML baseline 즉시 재계산. ADMIN_TOKEN 필수.")
+    @PostMapping("/baseline/trigger")
+    public ResponseEntity<ApiResponse<?>> triggerBaselineUpdate(
+            @RequestHeader("X-Admin-Token") String token) {
+
+        if (!adminToken.equals(token)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.fail("FORBIDDEN", "유효하지 않은 관리자 토큰입니다."));
+        }
+
+        baselineUpdateScheduler.updateBaselines();
+        return ResponseEntity.ok(ApiResponse.success("baseline 갱신 완료"));
     }
 }
