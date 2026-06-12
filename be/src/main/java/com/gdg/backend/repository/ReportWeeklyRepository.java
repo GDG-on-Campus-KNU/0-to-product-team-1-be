@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface ReportWeeklyRepository extends JpaRepository<ReportWeekly, ReportWeeklyId> {
 
-    List<ReportWeekly> findAllByUserIdOrderByGeneratedAtDesc(Long userId);
+    List<ReportWeekly> findAllByUserIdOrderByWeekIdDesc(Long userId);
 
     Optional<ReportWeekly> findByWeekIdAndUserId(String weekId, Long userId);
 }
