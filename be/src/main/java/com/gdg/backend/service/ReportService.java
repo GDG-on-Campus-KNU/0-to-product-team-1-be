@@ -36,7 +36,7 @@ public class ReportService {
     private final EntryRepository entryRepository;
 
     public List<WeeklyReportSummaryResponse> getWeeklyReports(Long userId) {
-        return reportWeeklyRepository.findAllByUserIdOrderByGeneratedAtDesc(userId).stream()
+        return reportWeeklyRepository.findAllByUserIdOrderByWeekIdDesc(userId).stream()
                 .map(report -> toSummaryResponse(report, userId))
                 .toList();
     }
@@ -81,7 +81,7 @@ public class ReportService {
     }
 
     public List<MonthlyReportResponse> getMonthlyReports(Long userId) {
-        return reportMonthlyRepository.findAllByUserIdOrderByGeneratedAtDesc(userId).stream()
+        return reportMonthlyRepository.findAllByUserIdOrderByMonthIdDesc(userId).stream()
                 .map(MonthlyReportResponse::from)
                 .toList();
     }

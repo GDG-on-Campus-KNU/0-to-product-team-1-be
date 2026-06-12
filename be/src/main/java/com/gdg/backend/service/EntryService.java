@@ -111,9 +111,6 @@ public class EntryService {
         }
     }
 
-    // 14.4 드릴 거부 — 향후 별도 테이블 추가 시 구현
-    @Transactional
-    public void rejectDrill(Long userId, Integer drillId) {
-        // TODO: 드릴 거부 로직 (ERD에 rejected_drills 없음)
-    }
+    // 14.4 드릴 거부는 MlForwardController POST /drills/{id}/reject → ML /reject로 처리됨
+    // (ML insights_store가 데이터 주인 — BE 별도 저장 불필요)
 }

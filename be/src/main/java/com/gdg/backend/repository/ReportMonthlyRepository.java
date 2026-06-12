@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface ReportMonthlyRepository extends JpaRepository<ReportMonthly, ReportMonthlyId> {
 
-    List<ReportMonthly> findAllByUserIdOrderByGeneratedAtDesc(Long userId);
+    List<ReportMonthly> findAllByUserIdOrderByMonthIdDesc(Long userId);
 
     Optional<ReportMonthly> findByMonthIdAndUserId(String monthId, Long userId);
 }
