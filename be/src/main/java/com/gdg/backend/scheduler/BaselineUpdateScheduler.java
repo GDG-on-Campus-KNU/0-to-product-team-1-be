@@ -70,6 +70,8 @@ public class BaselineUpdateScheduler {
                 body.put("user_id", String.valueOf(user.getUserId()));
                 body.put("entries", entryData);
                 body.put("window_days", WINDOW_DAYS);
+                // ML recompute는 rejected_drills 미전달 시 빈 배열로 덮어쓰므로 기존 값 보존
+                body.put("rejected_drills", fetchExistingRejectedDrills(user.getUserId()));
                 Map<String, Object> snapshot = mlClientService.recomputeBaseline(body);
 
                 Baseline baseline = baselineRepository.findById(user.getUserId())
@@ -88,5 +90,18 @@ public class BaselineUpdateScheduler {
             }
         });
         log.info("Baseline 갱신 cron 완료");
+    }
+
+    /** ML 기존 baseline의 rejected_drills 조회 — 미존재(404) 등 실패 시 빈 목록 */
+    private List<Object> fetchExistingRejectedDrills(Long userId) {
+        try {
+            Map<String, Object> existing = mlClientService.getBaseline(String.valueOf(userId));
+            if (existing != null && existing.get("rejected_drills") instanceof List<?> rejected) {
+                return new java.util.ArrayList<>(rejected);
+            }
+        } catch (Exception e) {
+            log.debug("사용자 {} 기존 baseline 없음 또는 조회 실패 — rejected_drills 빈 목록 사용", userId);
+        }
+        return List.of();
     }
 }
