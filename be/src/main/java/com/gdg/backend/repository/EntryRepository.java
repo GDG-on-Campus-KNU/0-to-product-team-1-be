@@ -25,6 +25,9 @@ public interface EntryRepository extends JpaRepository<Entry, Long> {
     // 일 1회 정책 — 오늘 이미 입력했는지 확인
     boolean existsByUser_UserIdAndRecordedDate(Long userId, LocalDate recordedDate);
 
+    // 피드백 시 entryId 누락 대비 — userId + 날짜로 당일 기록 조회 (일 1회 정책상 최대 1건)
+    Optional<Entry> findFirstByUser_UserIdAndRecordedDate(Long userId, LocalDate recordedDate);
+
     List<Entry> findByUser_UserIdAndRecordedDateBetween(Long userId, LocalDate start, LocalDate end);
 
     int countByUser_UserIdAndRecordedDateBetween(Long userId, LocalDate start, LocalDate end);

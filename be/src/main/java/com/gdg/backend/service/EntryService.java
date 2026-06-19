@@ -89,9 +89,8 @@ public class EntryService {
     }
 
     @Transactional
-    public void submitFeedback(Long entryId, EntryFeedbackRequest request, Long userId) {
-        Entry entry = entryRepository.findById(entryId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 엔트리입니다."));
+    public void submitFeedback(String entryId, EntryFeedbackRequest request, Long userId) {
+        Entry entry = resolveFeedbackEntry(entryId, userId);
 
         if (request.getDrillCompleted() != null) entry.setDrillCompleted(request.getDrillCompleted());
         if (request.getHelpful() != null) entry.setHelpful(request.getHelpful());
@@ -108,6 +107,30 @@ public class EntryService {
             } catch (Exception e) {
                 log.warn("ML 피드백 전달 실패 (무시): entryId={}, error={}", entryId, e.getMessage());
             }
+        }
+    }
+
+    /**
+     * entryId가 유효한 숫자면 해당 엔트리를, 아니면(없음·"undefined" 등) 호출 사용자의 당일 기록을 반환.
+     * FE가 드릴 받은 직후 entryId 없이 피드백을 보내는 경우 대비 (일 1회 정책상 당일 기록은 최대 1건).
+     */
+    private Entry resolveFeedbackEntry(String entryId, Long userId) {
+        Long parsedId = tryParseLong(entryId);
+        if (parsedId != null) {
+            return entryRepository.findById(parsedId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 엔트리입니다."));
+        }
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        return entryRepository.findFirstByUser_UserIdAndRecordedDate(userId, today)
+                .orElseThrow(() -> new IllegalArgumentException("오늘 작성한 기록이 없습니다."));
+    }
+
+    private Long tryParseLong(String value) {
+        if (value == null) return null;
+        try {
+            return Long.parseLong(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

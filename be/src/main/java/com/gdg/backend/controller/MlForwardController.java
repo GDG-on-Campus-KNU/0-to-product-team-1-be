@@ -206,22 +206,6 @@ public class MlForwardController {
                 mlClientService.getMonthly(String.valueOf(user.getUserId()), getCurrentMonthId()));
     }
 
-    // ── ML 미지원 (대상 endpoint 없음) — BE 로컬 처리 필요, 추후 별도 구현 ──
-
-    @Operation(summary = "[보류] 퀴즈 정답률 조회",
-            description = "ML에 집계 endpoint 없음. quiz 응답 match를 BE에 누적해 계산 필요 (별도 작업).")
-    @GetMapping("/quiz/correct-rate")
-    public ResponseEntity<Void> getQuizCorrectRate() {
-        return ResponseEntity.status(501).build();
-    }
-
-    @Operation(summary = "[보류] 카테고리 목록 조회",
-            description = "ML에 /categories endpoint 없음. 6색 매핑은 BE 정적 리소스로 제공 필요 (별도 작업).")
-    @GetMapping("/categories")
-    public ResponseEntity<Void> getCategories() {
-        return ResponseEntity.status(501).build();
-    }
-
     // ── 헬퍼 ──
 
     private String getCurrentWeekId() {
