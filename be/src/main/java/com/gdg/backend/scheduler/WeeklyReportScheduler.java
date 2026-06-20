@@ -52,22 +52,20 @@ public class WeeklyReportScheduler {
                     return;
                 }
 
-                List<Map<String, Object>> entryData = weekEntries.stream()
-                        .map(e -> {
-                            Map<String, Object> m = new java.util.HashMap<>();
-                            m.put("created_at", e.getCreatedAt() != null ? e.getCreatedAt().toString() : null);
-                            m.put("self_condition", e.getContextJson() != null ? e.getContextJson().getOrDefault("self_condition", 0) : 0);
-                            m.put("context", e.getContextJson() != null ? e.getContextJson() : Map.of());
-                            m.put("label_result", e.getLabelResultJson() != null ? e.getLabelResultJson() : Map.of());
-                            return m;
-                        })
-                        .collect(Collectors.toList());
+                List<Map<String, Object>> entryData = toEntryData(weekEntries);
+
+                LocalDate prevStartDate = weekStartDate.minusWeeks(1);
+                LocalDate prevEndDate = weekEndDate.minusWeeks(1);
+                List<com.gdg.backend.entity.Entry> prevWeekEntries = entryRepository
+                        .findByUser_UserIdAndRecordedDateBetween(user.getUserId(), prevStartDate, prevEndDate);
+                List<Map<String, Object>> prevEntryData = toEntryData(prevWeekEntries);
 
                 MlWeeklyRequest weeklyReq = MlWeeklyRequest.builder()
                         .userId(String.valueOf(user.getUserId()))
                         .weekId(weekId)
                         .entryCount(weekEntries.size())
                         .entries(entryData)
+                        .prevEntries(prevEntryData.isEmpty() ? null : prevEntryData)
                         .build();
                 Map<String, Object> weeklyResult = mlClientService.callWeekly(weeklyReq);
 
@@ -109,5 +107,18 @@ public class WeeklyReportScheduler {
     private LocalDateTime getWeekStart() {
         LocalDate monday = LocalDate.now(KST).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         return monday.atStartOfDay();
+    }
+
+    private List<Map<String, Object>> toEntryData(List<com.gdg.backend.entity.Entry> entries) {
+        return entries.stream()
+                .map(e -> {
+                    Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("created_at", e.getCreatedAt() != null ? e.getCreatedAt().toString() : null);
+                    m.put("self_condition", e.getContextJson() != null ? e.getContextJson().getOrDefault("self_condition", 0) : 0);
+                    m.put("context", e.getContextJson() != null ? e.getContextJson() : Map.of());
+                    m.put("label_result", e.getLabelResultJson() != null ? e.getLabelResultJson() : Map.of());
+                    return m;
+                })
+                .collect(Collectors.toList());
     }
 }
