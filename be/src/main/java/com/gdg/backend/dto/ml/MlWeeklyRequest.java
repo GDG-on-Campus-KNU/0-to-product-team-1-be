@@ -22,4 +22,7 @@ public class MlWeeklyRequest {
 
     @JsonProperty("entries")
     private List<Map<String, Object>> entries;
+
+    @JsonProperty("prev_entries")
+    private List<Map<String, Object>> prevEntries;
 }
