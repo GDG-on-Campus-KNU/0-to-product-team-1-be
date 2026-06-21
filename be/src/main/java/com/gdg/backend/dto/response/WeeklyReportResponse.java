@@ -1,7 +1,7 @@
 package com.gdg.backend.dto.response;
 
 import com.gdg.backend.entity.ReportWeekly;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,6 +11,7 @@ import java.util.Map;
 
 @Getter
 @Builder
+@JsonInclude(JsonInclude.Include.ALWAYS)
 public class WeeklyReportResponse {
 
     private String weekId;
@@ -20,8 +21,7 @@ public class WeeklyReportResponse {
     private List<DailyDrillRecord> dailyDrills;
     private LifestyleSummary lifestyleSummary;
     private LocalDateTime generatedAt;
-    @JsonProperty("isChecked")
-    private boolean isChecked;
+    private Boolean isChecked;
     private String userMemo;
 
     public static WeeklyReportResponse from(ReportWeekly report) {
