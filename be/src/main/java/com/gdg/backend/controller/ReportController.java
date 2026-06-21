@@ -1,5 +1,6 @@
 package com.gdg.backend.controller;
 
+import com.gdg.backend.dto.request.WeeklyMemoRequest;
 import com.gdg.backend.dto.response.MonthlyReportResponse;
 import com.gdg.backend.dto.response.WeeklyReportResponse;
 import com.gdg.backend.dto.response.WeeklyReportSummaryResponse;
@@ -8,6 +9,7 @@ import com.gdg.backend.scheduler.WeeklyReportScheduler;
 import com.gdg.backend.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -52,6 +54,16 @@ public class ReportController {
             @PathVariable String monthId,
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(reportService.getMonthlyReport(monthId, user.getUserId()));
+    }
+
+    @Operation(summary = "나의 발견 메모 저장", description = "주간 리포트에 사용자 메모를 최초 1회 저장합니다. 이미 작성된 경우 400을 반환합니다.")
+    @PatchMapping("/weekly/{weekId}/memo")
+    public ResponseEntity<Void> saveWeeklyMemo(
+            @PathVariable String weekId,
+            @RequestBody @Valid WeeklyMemoRequest request,
+            @AuthenticationPrincipal User user) {
+        reportService.saveUserMemo(weekId, user.getUserId(), request.getMemo());
+        return ResponseEntity.ok().build();
     }
 
     /* ── 테스트용 API ── */

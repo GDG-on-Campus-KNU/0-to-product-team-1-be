@@ -41,6 +41,13 @@ public class ReportWeekly {
     @Column(name = "generated_at")
     private LocalDateTime generatedAt;
 
+    @Column(name = "is_checked", nullable = false)
+    @Builder.Default
+    private boolean checked = false;
+
+    @Column(name = "user_memo", columnDefinition = "TEXT")
+    private String userMemo;
+
     public static ReportWeekly of(String weekId, Long userId, Map<String, Object> blocksJson, Map<String, Object> visualizationsJson, LocalDateTime generatedAt) {
         return ReportWeekly.builder()
                 .weekId(weekId)
