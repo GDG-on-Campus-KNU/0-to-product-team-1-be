@@ -89,7 +89,7 @@ public class ReportService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주간 리포트입니다."));
 
         if (report.getUserMemo() != null) {
-            throw new IllegalStateException("이미 작성된 메모는 수정할 수 없습니다.");
+            throw new IllegalArgumentException("이미 작성된 메모는 수정할 수 없습니다.");
         }
 
         report.setUserMemo(memo);
