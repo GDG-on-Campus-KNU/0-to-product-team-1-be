@@ -67,17 +67,33 @@ public class ReportService {
         ReportWeekly report = reportWeeklyRepository.findByWeekIdAndUserId(weekId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주간 리포트입니다."));
 
+        if (!report.isChecked()) {
+            report.setChecked(true);
+            reportWeeklyRepository.save(report);
+        }
+
         LocalDate[] range = getWeekRange(weekId);
         List<DailyDrillRecord> dailyDrills = buildDailyDrills(userId, range);
         LifestyleSummary lifestyleSummary = buildLifestyleSummary(userId, range);
 
-        // ML 실제 응답 구조 → FE 기대 구조로 호환 변환 (DB 원본은 보존, 응답 시점에만 변환)
         Map<String, Object> feBlocks = WeeklyReportCompat.toFeBlocks(
                 report.getBlocksJson(), report.getVisualizationsJson());
         Map<String, Object> feVisualizations = WeeklyReportCompat.toFeVisualizations(
                 report.getBlocksJson(), report.getVisualizationsJson());
 
         return WeeklyReportResponse.from(report, feBlocks, feVisualizations, dailyDrills, lifestyleSummary);
+    }
+
+    public void saveUserMemo(String weekId, Long userId, String memo) {
+        ReportWeekly report = reportWeeklyRepository.findByWeekIdAndUserId(weekId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주간 리포트입니다."));
+
+        if (report.getUserMemo() != null) {
+            throw new IllegalStateException("이미 작성된 메모는 수정할 수 없습니다.");
+        }
+
+        report.setUserMemo(memo);
+        reportWeeklyRepository.save(report);
     }
 
     public List<MonthlyReportResponse> getMonthlyReports(Long userId) {

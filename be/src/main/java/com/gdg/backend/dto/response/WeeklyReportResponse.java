@@ -1,6 +1,7 @@
 package com.gdg.backend.dto.response;
 
 import com.gdg.backend.entity.ReportWeekly;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,6 +20,9 @@ public class WeeklyReportResponse {
     private List<DailyDrillRecord> dailyDrills;
     private LifestyleSummary lifestyleSummary;
     private LocalDateTime generatedAt;
+    @JsonProperty("isChecked")
+    private boolean isChecked;
+    private String userMemo;
 
     public static WeeklyReportResponse from(ReportWeekly report) {
         return WeeklyReportResponse.builder()
@@ -53,6 +57,8 @@ public class WeeklyReportResponse {
                 .dailyDrills(dailyDrills)
                 .lifestyleSummary(lifestyleSummary)
                 .generatedAt(report.getGeneratedAt())
+                .isChecked(report.isChecked())
+                .userMemo(report.getUserMemo())
                 .build();
     }
 }
