@@ -2,13 +2,11 @@ package com.gdg.backend.service;
 
 import com.gdg.backend.dto.response.CalendarRecord;
 import com.gdg.backend.dto.response.DrillTodayResponse;
-import com.gdg.backend.entity.Entry;
 import com.gdg.backend.repository.EntryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -31,10 +29,7 @@ public class RecordService {
     }
 
     public DrillTodayResponse getDailyRecord(Long userId, LocalDate date) {
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
-
-        return entryRepository.findFirstByUser_UserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, startOfDay, endOfDay)
+        return entryRepository.findFirstByUser_UserIdAndRecordedDate(userId, date)
                 .map(DrillTodayResponse::from)
                 .orElse(DrillTodayResponse.empty());
     }
