@@ -65,6 +65,10 @@ public final class WeeklyReportCompat {
         block3.put("source", asString(nextFocus.get("source"), "CBT 기반 권고"));
         result.put("block3_weekly_tip", block3);
 
+        if (src.containsKey("self_check_quiz")) {
+            result.put("self_check_quiz", src.get("self_check_quiz"));
+        }
+
         return result;
     }
 
