@@ -73,7 +73,17 @@ public class WeeklyReportScheduler {
                         .entries(entryData)
                         .prevEntries(prevEntryData.isEmpty() ? null : prevEntryData)
                         .build();
-                Map<String, Object> weeklyResult = mlClientService.callWeekly(weeklyReq);
+                Map<String, Object> weeklyResult = new java.util.HashMap<>(mlClientService.callWeekly(weeklyReq));
+
+                // BE가 직접 계산한 드릴 수행률로 drill_action 덮어쓰기
+                long completedCount = weekEntries.stream()
+                        .filter(e -> Boolean.TRUE.equals(e.getDrillCompleted())).count();
+                double practiceRate = (double) completedCount / weekEntries.size();
+                Map<String, Object> drillAction = new java.util.HashMap<>();
+                drillAction.put("practice_rate", practiceRate);
+                drillAction.put("practiced_count", (int) completedCount);
+                drillAction.put("recommended_count", weekEntries.size());
+                weeklyResult.put("drill_action", drillAction);
 
                 // blocksJson: 텍스트/요약 블록
                 List<String> blockKeys = List.of("overview", "dominant_pattern", "drill_action",
