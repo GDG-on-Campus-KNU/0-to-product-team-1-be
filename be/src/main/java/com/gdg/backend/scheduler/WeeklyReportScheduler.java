@@ -34,9 +34,15 @@ public class WeeklyReportScheduler {
 
     @Scheduled(cron = "0 0 20 * * SUN", zone = "Asia/Seoul")
     public void generateWeeklyReports() {
-        String weekId = getCurrentWeekId();
-        LocalDateTime weekStart = getWeekStart();
-        LocalDateTime weekEnd = LocalDateTime.now(KST);
+        generateWeeklyReports(null);
+    }
+
+    public void generateWeeklyReports(String targetWeekId) {
+        String weekId = (targetWeekId != null) ? targetWeekId : getCurrentWeekId();
+        LocalDateTime weekStart = (targetWeekId != null) ? getWeekStartOf(targetWeekId) : getWeekStart();
+        LocalDateTime weekEnd = (targetWeekId != null)
+                ? getWeekStartOf(targetWeekId).plusDays(6).withHour(23).withMinute(59).withSecond(59)
+                : LocalDateTime.now(KST);
 
         log.info("주간 리포트 cron 시작: weekId={}", weekId);
 
@@ -106,6 +112,16 @@ public class WeeklyReportScheduler {
 
     private LocalDateTime getWeekStart() {
         LocalDate monday = LocalDate.now(KST).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        return monday.atStartOfDay();
+    }
+
+    private LocalDateTime getWeekStartOf(String weekId) {
+        // weekId 형식: "2026-W19"
+        int year = Integer.parseInt(weekId.substring(0, 4));
+        int week = Integer.parseInt(weekId.substring(6));
+        LocalDate monday = LocalDate.of(year, 1, 4)
+                .with(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear(), week)
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         return monday.atStartOfDay();
     }
 
