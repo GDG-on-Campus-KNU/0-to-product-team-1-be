@@ -70,11 +70,12 @@ public class ReportController {
 
     @Operation(
             summary = "[TEST] 주간 리포트 스케줄러 수동 실행",
-            description = "ML 서버 연동해서 전체 유저 주간 리포트를 즉시 생성. 수정된 필드명 검증용."
+            description = "weekId 미지정 시 현재 주차로 실행. 지정 시 해당 주차 리포트 생성."
     )
     @PostMapping("/weekly/trigger")
-    public ResponseEntity<Void> triggerWeeklyReport() {
-        weeklyReportScheduler.generateWeeklyReports();
+    public ResponseEntity<Void> triggerWeeklyReport(
+            @RequestParam(required = false) String weekId) {
+        weeklyReportScheduler.generateWeeklyReports(weekId);
         return ResponseEntity.ok().build();
     }
 
