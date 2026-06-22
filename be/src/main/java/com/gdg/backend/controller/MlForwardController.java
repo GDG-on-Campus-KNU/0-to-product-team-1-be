@@ -180,16 +180,6 @@ public class MlForwardController {
         return ResponseEntity.ok(mlClientService.getBaseline(userId));
     }
 
-    // 퀴즈 답변 제출 — ML PATCH /weekly/quiz (기존 forwarding 재사용)
-    @Operation(summary = "퀴즈 답변 제출", description = "자가진단 답을 ML PATCH /weekly/quiz로 전달. 응답에 match 포함.")
-    @PostMapping("/quiz/answer")
-    public ResponseEntity<Map<String, Object>> postQuizAnswer(
-            @RequestBody Map<String, Object> body,
-            @AuthenticationPrincipal User user) {
-        body.put("user_id", String.valueOf(user.getUserId()));
-        return ResponseEntity.ok(mlClientService.patchWeeklyQuiz(body));
-    }
-
     // 최신 주간 리포트 — ML GET /weekly?user_id=&week=(이번 주)
     @Operation(summary = "최신 주간 리포트", description = "이번 주 주간 리포트를 ML에서 조회합니다.")
     @GetMapping("/weekly/latest")
