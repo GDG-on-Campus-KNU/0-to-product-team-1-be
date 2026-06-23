@@ -67,7 +67,9 @@ public class ReportService {
         ReportWeekly report = reportWeeklyRepository.findByWeekIdAndUserId(weekId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주간 리포트입니다."));
 
-        if (!report.isChecked()) {
+        boolean wasChecked = report.isChecked();
+
+        if (!wasChecked) {
             report.setChecked(true);
             reportWeeklyRepository.save(report);
         }
@@ -81,7 +83,7 @@ public class ReportService {
         Map<String, Object> feVisualizations = WeeklyReportCompat.toFeVisualizations(
                 report.getBlocksJson(), report.getVisualizationsJson());
 
-        return WeeklyReportResponse.from(report, feBlocks, feVisualizations, dailyDrills, lifestyleSummary);
+        return WeeklyReportResponse.from(report, feBlocks, feVisualizations, dailyDrills, lifestyleSummary, wasChecked);
     }
 
     public void saveUserMemo(String weekId, Long userId, String memo) {

@@ -61,4 +61,21 @@ public class WeeklyReportResponse {
                 .userMemo(report.getUserMemo())
                 .build();
     }
+
+    public static WeeklyReportResponse from(ReportWeekly report, Map<String, Object> blocksJson,
+                                            Map<String, Object> visualizationsJson,
+                                            List<DailyDrillRecord> dailyDrills, LifestyleSummary lifestyleSummary,
+                                            boolean wasChecked) {
+        return WeeklyReportResponse.builder()
+                .weekId(report.getWeekId())
+                .userId(report.getUserId())
+                .blocksJson(blocksJson)
+                .visualizationsJson(visualizationsJson)
+                .dailyDrills(dailyDrills)
+                .lifestyleSummary(lifestyleSummary)
+                .generatedAt(report.getGeneratedAt())
+                .isChecked(wasChecked)
+                .userMemo(report.getUserMemo())
+                .build();
+    }
 }
