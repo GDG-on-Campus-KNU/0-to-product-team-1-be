@@ -144,11 +144,21 @@ public class ReportService {
     private String modeFromContext(List<Entry> entries, String key) {
         return entries.stream()
                 .filter(e -> e.getContextJson() != null && e.getContextJson().containsKey(key))
-                .map(e -> e.getContextJson().get(key).toString())
+                .map(e -> toSocialLabel(e.getContextJson().get(key).toString()))
                 .collect(Collectors.groupingBy(v -> v, Collectors.counting()))
                 .entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(null);
+    }
+
+    private String toSocialLabel(String raw) {
+        return switch (raw) {
+            case "없음", "alone", "0" -> "없음";
+            case "적음", "family", "1" -> "하";
+            case "보통", "coworkers", "friends", "2" -> "중";
+            case "활발", "많음", "3" -> "상";
+            default -> raw;
+        };
     }
 }
