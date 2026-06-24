@@ -1,5 +1,6 @@
 package com.gdg.backend.controller;
 
+import com.gdg.backend.dto.ml.MlWeeklyRequest;
 import com.gdg.backend.dto.request.DiscoveriesRequest;
 import com.gdg.backend.entity.User;
 import com.gdg.backend.repository.EntryRepository;
@@ -7,16 +8,20 @@ import com.gdg.backend.service.MlClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
 import java.util.HashMap;
-
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 14.5~14.14 ML 포워딩 엔드포인트
@@ -24,6 +29,7 @@ import java.util.Map;
 @Tag(name = "ML Forward", description = "ML 서비스 포워딩 API (일부 협의/구현 예정)")
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class MlForwardController {
 
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
@@ -70,6 +76,28 @@ public class MlForwardController {
             @RequestBody Map<String, Object> body,
             @AuthenticationPrincipal User user) {
         body.put("user_id", String.valueOf(user.getUserId()));
+
+        // ML 캐시 miss 방지: PATCH 전 POST /weekly로 캐시 재워주기
+        String week = body.get("week") != null ? body.get("week").toString() : getCurrentWeekId();
+        try {
+            LocalDate weekStart = getWeekStartOf(week);
+            LocalDate weekEnd = weekStart.plusDays(6);
+            List<com.gdg.backend.entity.Entry> weekEntries = entryRepository
+                    .findByUser_UserIdAndRecordedDateBetween(user.getUserId(), weekStart, weekEnd);
+            if (!weekEntries.isEmpty()) {
+                List<Map<String, Object>> entryData = toEntryData(weekEntries);
+                MlWeeklyRequest weeklyReq = MlWeeklyRequest.builder()
+                        .userId(String.valueOf(user.getUserId()))
+                        .weekId(week)
+                        .entryCount(weekEntries.size())
+                        .entries(entryData)
+                        .build();
+                mlClientService.callWeekly(weeklyReq);
+            }
+        } catch (Exception e) {
+            log.warn("퀴즈 캐시 재워주기 실패 (week={}): {}", week, e.getMessage());
+        }
+
         return ResponseEntity.ok(mlClientService.patchWeeklyQuiz(body));
     }
 
@@ -197,6 +225,27 @@ public class MlForwardController {
     }
 
     // ── 헬퍼 ──
+
+    private LocalDate getWeekStartOf(String weekId) {
+        int year = Integer.parseInt(weekId.substring(0, 4));
+        int week = Integer.parseInt(weekId.substring(6));
+        return LocalDate.of(year, 1, 4)
+                .with(WeekFields.ISO.weekOfWeekBasedYear(), week)
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    }
+
+    private List<Map<String, Object>> toEntryData(List<com.gdg.backend.entity.Entry> entries) {
+        return entries.stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("created_at", e.getCreatedAt() != null ? e.getCreatedAt().toString() : null);
+                    m.put("self_condition", e.getContextJson() != null ? e.getContextJson().getOrDefault("self_condition", 0) : 0);
+                    m.put("context", e.getContextJson() != null ? e.getContextJson() : Map.of());
+                    m.put("label_result", e.getLabelResultJson() != null ? e.getLabelResultJson() : Map.of());
+                    return m;
+                })
+                .collect(Collectors.toList());
+    }
 
     private String getCurrentWeekId() {
         LocalDate today = LocalDate.now(KST);
