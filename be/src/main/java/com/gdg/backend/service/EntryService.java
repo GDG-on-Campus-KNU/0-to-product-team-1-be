@@ -38,15 +38,20 @@ public class EntryService {
     );
 
     private static final List<MlEntriesResponse> MOCK_RESPONSES = Arrays.asList(
-            mockRes(3,   "cognitive_restructuring", "orange_warm",
+            mockRes(3,  "cognitive_restructuring", "orange_warm",
+                    "증거 찾기", "부정적인 생각을 지지하는 증거와 반박하는 증거를 각각 2가지씩 적어보세요.", "Burns(1980) 인지재구성", 7,
                     em(0.1,0.5,0.2,0.1,0.1), pt(0.0,0.1,0.1,0.6,0.1,0.1)),
-            mockRes(60,  "grounding",               "sky_blue",
+            mockRes(60, "grounding",               "sky_blue",
+                    "닻 내리기", "지금 앉아있는 의자에 등을 기대고 발이 바닥에 닿는 느낌에 집중해보세요.", "Grounding 기법", 3,
                     em(0.0,0.1,0.1,0.0,0.8), pt(0.6,0.1,0.1,0.1,0.0,0.1)),
-            mockRes(55,  "habit_design",             "pink_warm",
+            mockRes(55, "habit_design",             "pink_warm",
+                    "저축 마음 습관", "오늘 하루 한 가지 작은 절제를 실천하고 무엇을 아꼈는지 기록해보세요.", "Duhigg(2012) 습관의 힘", 3,
                     em(0.1,0.2,0.5,0.1,0.1), pt(0.0,0.1,0.6,0.1,0.1,0.1)),
-            mockRes(77,  "sleep_circadian",          "blue_night",
+            mockRes(77, "sleep_circadian",          "blue_night",
+                    "수면 루틴 점검", "오늘 잠들기 1시간 전 습관을 적고, 수면에 방해되는 것 하나를 개선해보세요.", "Walker(2017) 수면의 과학", 5,
                     em(0.1,0.5,0.2,0.1,0.1), pt(0.1,0.5,0.1,0.1,0.1,0.1)),
-            mockRes(75,  "self_compassion",          "lavender",
+            mockRes(75, "self_compassion",          "lavender",
+                    "자기 위로 편지", "힘들어하는 친한 친구에게 하듯, 지금의 나에게 위로 한 마디를 적어보세요.", "Neff(2003) 자기자비", 5,
                     em(0.0,0.1,0.1,0.0,0.8), pt(0.0,0.0,0.1,0.1,0.6,0.2))
     );
 
@@ -64,15 +69,40 @@ public class EntryService {
     }
 
     private static MlEntriesResponse mockRes(int drillId, String category, String color,
+                                             String name, String instruction, String citation, int durationMin,
                                              Map<String, Object> emotions, Map<String, Object> patterns) {
         Map<String, Object> label = new java.util.HashMap<>();
         label.put("emotions", emotions);
         label.put("patterns", patterns);
+
         Map<String, Object> drill = new java.util.HashMap<>();
         drill.put("id", drillId);
+        drill.put("name", name);
+        drill.put("category", category);
+        drill.put("citation", citation);
+        drill.put("instruction", instruction);
+        drill.put("duration_min", durationMin);
+
+        Map<String, Object> copy = new java.util.HashMap<>();
+        copy.put("line1", "오늘의 드릴: " + name);
+        copy.put("line2", instruction);
+        copy.put("line3", "예상 소요 시간: " + durationMin + "분");
+
+        Map<String, Object> why = new java.util.HashMap<>();
+        why.put("text", "지금 상태에서 도움이 될 것 같아요.");
+        why.put("tone", "supportive");
+        why.put("factors", new java.util.ArrayList<>());
+        why.put("mechanism", instruction);
+        why.put("expected_benefit", "감정 조절과 패턴 인식에 도움이 됩니다.");
+
         Map<String, Object> rec = new java.util.HashMap<>();
         rec.put("type", "drill");
         rec.put("drill", drill);
+        rec.put("copy", copy);
+        rec.put("why", why);
+        rec.put("tone", "warm");
+        rec.put("reason", name + " 드릴이 현재 상태에 도움이 될 것 같아요.");
+
         return new MlEntriesResponse(null, null, label, rec, category, null, color, null);
     }
 
