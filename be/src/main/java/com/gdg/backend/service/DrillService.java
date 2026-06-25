@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +20,8 @@ public class DrillService {
      * Entry가 존재하면 드릴 결과를 반환하고, 없으면 hasDrill=false를 반환한다.
      */
     public DrillTodayResponse getTodayDrill(Long userId) {
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
         return entryRepository.findFirstByUser_UserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, startOfDay, endOfDay)
