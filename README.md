@@ -48,9 +48,9 @@
 - [API 개요](#-api-개요-api-overview)
 - [ML 서비스 연동](#-ml-서비스-연동-ml-integration)
 - [안전 설계](#-안전-설계-safety)
-- [실행 방법](#-실행-방법-getting-started)
 - [프로젝트 구조](#-프로젝트-구조-project-structure)
 - [팀 소개](#-팀-소개-team)
+- [데이터베이스 ERD](#데이터베이스-erd-entity-relationship-diagram)
 - [면책 조항](#-면책-조항-disclaimer)
 
 <br/>
@@ -167,48 +167,6 @@
 
 <br/>
 
-## 🚀 실행 방법 (Getting Started)
-
-### 사전 요구사항
-
-- Java 17
-- Docker · Docker Compose
-
-### Docker Compose (권장)
-
-```bash
-cd be
-docker compose up --build
-```
-
-- PostgreSQL · Redis · 앱(8080) 컨테이너가 함께 기동됩니다.
-- ML 서버는 `ML_SERVICE_URL` 로 연결합니다. (기본: `http://host.docker.internal:8001`)
-
-### 로컬 실행
-
-```bash
-cd be
-./gradlew bootRun
-```
-
-주요 환경 변수:
-
-| 변수 | 설명 | 기본값 |
-| :--- | :--- | :--- |
-| `SPRING_DATASOURCE_URL` | PostgreSQL 접속 URL | — |
-| `REDIS_HOST` / `REDIS_PORT` | Redis 호스트 · 포트 | localhost / 6379 |
-| `ML_SERVICE_URL` | ML 서버 베이스 URL | http://localhost:8001 |
-| `ADMIN_TOKEN` | 관리자 API 토큰 | dev_token_local |
-| `MAIL_USERNAME` | 이메일 발송 계정 | — |
-
-### 테스트
-
-```bash
-./gradlew test
-```
-
-<br/>
-
 ## 📁 프로젝트 구조 (Project Structure)
 
 ```
@@ -269,6 +227,64 @@ be/
 </table>
 
 <br/>
+
+# 데이터베이스 ERD (Entity-Relationship Diagram)
+
+```mermaid
+erDiagram
+    USERS ||--o{ ENTRIES : "작성 (1:N)"
+    USERS ||--|| USER_PREFERENCES : "설정 보유 (1:1)"
+    ENTRIES ||--o{ FEEDBACKS : "평가 (1:N)"
+
+    USERS {
+        BIGINT id PK "고유 ID"
+        VARCHAR(255) email "이메일 (Unique)"
+        VARCHAR(100) display_name "닉네임"
+        TIMESTAMP created_at "가입일시"
+    }
+
+    ENTRIES {
+        BIGINT id PK "입력 고유 ID"
+        BIGINT user_id FK "작성자 ID"
+        TEXT text "입력한 텍스트 (필수)"
+        INT self_condition "현재 상태 (1~5)"
+        JSONB llm_result "AI 분석 결과 (JSON)"
+        TIMESTAMP created_at "작성일시"
+    }
+
+    FEEDBACKS {
+        BIGINT id PK "피드백 고유 ID"
+        BIGINT entry_id FK "어떤 입력에 대한 피드백인지"
+        VARCHAR(10) drill_id "추천된 드릴 ID (필수)"
+        VARCHAR(20) label "'helpful' / 'not_helpful'"
+        TIMESTAMP created_at "평가일시"
+    }
+
+    USER_PREFERENCES {
+        BIGINT user_id PK,FK "사용자 ID (USERS 참조)"
+        BOOLEAN ask_sleep "수면 질문 허용 여부"
+        BOOLEAN ask_activity "활동 질문 허용 여부"
+        BOOLEAN ask_meal "식사 질문 허용 여부"
+        BOOLEAN ask_caffeine "카페인 질문 허용 여부"
+        TIMESTAMP declined_at "영구 거부 일시"
+        TIMESTAMP updated_at "수정일시"
+    }
+```
+
+## 테이블 상세 설명
+
+### 1) USERS (사용자 테이블)
+- 서비스에 가입한 사용자의 기본 정보가 저장.
+
+### 2) ENTRIES (입력 및 AI 분석 결과 테이블)
+- 사용자가 한 줄 텍스트로 입력한 내용과, 그에 대해 LLM(AI)이 반환한 결과물이 저장.
+- AI 응답 결과는 확장성을 위해 `JSONB` 타입으로 통째로 저장.
+
+### 3) FEEDBACKS (드릴 추천 피드백 테이블)
+- 시스템이 추천해 준 솔루션(드릴)에 대해 사용자가 '도움됨/도움 안 됨'으로 평가한 내역이 저장.
+
+### 4) USER_PREFERENCES (사용자 질문 설정 테이블)
+- 점진적 입력(추가 질문)에 대한 사용자별 on/off 설정이 저장.
 
 ## ⚠️ 면책 조항 (Disclaimer)
 
