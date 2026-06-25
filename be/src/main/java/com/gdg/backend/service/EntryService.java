@@ -18,8 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -29,6 +32,49 @@ public class EntryService {
     private final EntryRepository entryRepository;
     private final UserRepository userRepository;
     private final MlClientService mlClientService;
+
+    private static final Set<String> DEMO_EMAILS = Set.of(
+            "asdf@asdf", "mock@mock.com", "mock2@mock.com", "mock3@mock.com", "mock4@mock.com", "mock5@mock.com"
+    );
+
+    private static final List<MlEntriesResponse> MOCK_RESPONSES = Arrays.asList(
+            mockRes(3,   "cognitive_restructuring", "orange_warm",
+                    em(0.1,0.5,0.2,0.1,0.1), pt(0.0,0.1,0.1,0.6,0.1,0.1)),
+            mockRes(60,  "grounding",               "sky_blue",
+                    em(0.0,0.1,0.1,0.0,0.8), pt(0.6,0.1,0.1,0.1,0.0,0.1)),
+            mockRes(55,  "habit_design",             "pink_warm",
+                    em(0.1,0.2,0.5,0.1,0.1), pt(0.0,0.1,0.6,0.1,0.1,0.1)),
+            mockRes(77,  "sleep_circadian",          "blue_night",
+                    em(0.1,0.5,0.2,0.1,0.1), pt(0.1,0.5,0.1,0.1,0.1,0.1)),
+            mockRes(75,  "self_compassion",          "lavender",
+                    em(0.0,0.1,0.1,0.0,0.8), pt(0.0,0.0,0.1,0.1,0.6,0.2))
+    );
+
+    private static Map<String, Object> em(double 분노, double 불안, double 우울, double 죄책, double 중립) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("분노", 분노); m.put("불안", 불안); m.put("우울", 우울); m.put("죄책", 죄책); m.put("중립", 중립);
+        return m;
+    }
+
+    private static Map<String, Object> pt(double 독심술, double 이분법, double 당위진술, double 미래예측, double 자기비난, double 과잉일반화) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("독심술", 독심술); m.put("이분법", 이분법); m.put("당위진술", 당위진술);
+        m.put("미래예측", 미래예측); m.put("자기비난", 자기비난); m.put("과잉일반화", 과잉일반화);
+        return m;
+    }
+
+    private static MlEntriesResponse mockRes(int drillId, String category, String color,
+                                             Map<String, Object> emotions, Map<String, Object> patterns) {
+        Map<String, Object> label = new java.util.HashMap<>();
+        label.put("emotions", emotions);
+        label.put("patterns", patterns);
+        Map<String, Object> drill = new java.util.HashMap<>();
+        drill.put("id", drillId);
+        Map<String, Object> rec = new java.util.HashMap<>();
+        rec.put("type", "drill");
+        rec.put("drill", drill);
+        return new MlEntriesResponse(null, null, label, rec, category, null, color, null);
+    }
 
     @Transactional
     @SuppressWarnings("unchecked")
@@ -46,14 +92,17 @@ public class EntryService {
         entry.setContextJson(request.getContext());
 
         // ML 호출 + 결과 반영
-        MlEntriesResponse mlRes = callMlEntries(request, userId);
+        MlEntriesResponse mlRes = callMlEntries(request, userId, user.getEmail());
         applyMlResult(entry, mlRes);
 
         entryRepository.save(entry);
         return EntryCreateResponse.from(entry);
     }
 
-    private MlEntriesResponse callMlEntries(EntryCreateRequest request, Long userId) {
+    private MlEntriesResponse callMlEntries(EntryCreateRequest request, Long userId, String userEmail) {
+        if (!DEMO_EMAILS.contains(userEmail)) {
+            return MOCK_RESPONSES.get((int)(userId % MOCK_RESPONSES.size()));
+        }
         List<Integer> recentDrillIds = entryRepository.findRecentDrillIdsByUserId(
                 userId, PageRequest.of(0, 3));
 
